@@ -1,10 +1,10 @@
 import ROOT
 import sys
 
-fname = "h_lgcl0_Run347.root"
+fname = "root_selected/Run357_list_selected_calibrated.root"
 #fname = "h_lgcl0_Run347_new4.root"
 f = ROOT.TFile(fname)
-h = f.Get("h_lgcl0")
+h = f.Get("hcal")
 
 xmin = h.GetXaxis().GetXmin()
 xmax = h.GetXaxis().GetXmax()
@@ -22,7 +22,6 @@ xfitmin = 2800
 xfitmax = 3400
 
 var = ROOT.RooRealVar( "energy", "energy", xmin, 7500, "ADCCount")
-#var.setBins(xbins)
 var.setRange("r1", xfitmin, xfitmax)
 datahist = ROOT.RooDataHist("datahist", "datahist", ROOT.RooArgList(var, "argdatahist"), h)
 
