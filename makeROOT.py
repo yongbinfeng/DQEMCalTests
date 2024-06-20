@@ -27,6 +27,11 @@ ch_calib = [203.7,
 calib_mean = sum(ch_calib)/len(ch_calib)
 
 def makeROOT(run):
+  # check if file exists
+  if not os.path.exists(f"data/Run{run}_list.txt"):
+    print(f"File data/Run{run}_list.txt does not exist")
+    return
+  
   print(f"Making ROOT file for Run {run}")
   trigID = array('i', [0])
   trigTime = array('d', [0])
@@ -54,11 +59,6 @@ def makeROOT(run):
   tout.SetBranchAddress("ch_lg_calib",ch_lg_calib)
 
   nevents=0
-  
-  # check if file exists
-  if not os.path.exists(f"data/Run{run}_list.txt"):
-    print(f"File data/Run{run}_list.txt does not exist")
-    return
   
   with open(f"data/Run{run}_list.txt") as infile:
 
