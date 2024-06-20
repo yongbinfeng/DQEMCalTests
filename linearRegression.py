@@ -1,16 +1,26 @@
 # fit 16D data to 1D data with ROOT
 
 import ROOT
+import os
 import numpy as np
 from sklearn.linear_model import LinearRegression
 from scipy.optimize import minimize
 import json
 
-run = 357
-fname = f"root_selected/Run{run}_list_selected.root"
-f = ROOT.TFile(fname)
-t = f.Get("save")
+t = ROOT.TChain("save")
+for run in range(350, 359):
+    fname = f"root_selected/Run{run}_list_selected.root"
+    if not os.path.exists(fname):
+        print(f"File {fname} does not exist")
+        continue
+    t.Add(fname)
+
+#run = 357
+#fname = f"root_selected/Run{run}_list_selected.root"
+#f = ROOT.TFile(fname)
+#t = f.Get("save")
 nentries = t.GetEntries()
+print(f"Number of entries: {nentries}")
 
 chans = np.zeros((nentries, 16))
 energys = np.zeros(nentries)
@@ -36,7 +46,7 @@ print(result.x)
 
 # run the predictions
 predictions = np.dot(chans, result.x[:-1]) + result.x[-1]
-ofile = ROOT.TFile(f"root_selected/Run{run}_list_selected_calibrated.root", "RECREATE")
+ofile = ROOT.TFile(f"root_selected/Run_list_selected_calibrated.root", "RECREATE")
 hcal = ROOT.TH1F("hcal", "Calibrated Energy", 200, 2500, 4000)
 hcal.FillN(nentries, predictions, np.ones(nentries))
 hcal.Write()

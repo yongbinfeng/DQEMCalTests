@@ -1,7 +1,7 @@
 import ROOT
 import sys
 
-fname = "root_selected/Run357_list_selected_calibrated.root"
+fname = "root_selected/Run_list_selected_calibrated.root"
 #fname = "h_lgcl0_Run347_new4.root"
 f = ROOT.TFile(fname)
 h = f.Get("hcal")
@@ -19,7 +19,7 @@ print("xrms = ", xrms)
 print("xbins = ", xbins)
 
 xfitmin = 2800
-xfitmax = 3400
+xfitmax = 3300
 
 var = ROOT.RooRealVar( "energy", "energy", xmin, 7500, "ADCCount")
 var.setRange("r1", xfitmin, xfitmax)
