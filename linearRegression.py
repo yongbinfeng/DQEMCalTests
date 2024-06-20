@@ -7,18 +7,20 @@ from sklearn.linear_model import LinearRegression
 from scipy.optimize import minimize
 import json
 
+ROOT.gROOT.SetBatch(True)
+
 t = ROOT.TChain("save")
-for run in range(350, 359):
+for run in range(361, 367):
     fname = f"root_selected/Run{run}_list_selected.root"
     if not os.path.exists(fname):
         print(f"File {fname} does not exist")
         continue
     t.Add(fname)
 
-#run = 357
-#fname = f"root_selected/Run{run}_list_selected.root"
-#f = ROOT.TFile(fname)
-#t = f.Get("save")
+# run = 357
+# fname = f"root_selected/Run{run}_list_selected.root"
+# f = ROOT.TFile(fname)
+# t = f.Get("save")
 nentries = t.GetEntries()
 print(f"Number of entries: {nentries}")
 
@@ -29,12 +31,14 @@ for i in range(nentries):
     t.GetEntry(i)
     for j in range(16):
         chans[i][j] = t.ch_lg[j]
-        
+
     energys[i] = ROOT.gRandom.Gaus(3100, 3100*0.000002)
-    
+
+
 def objective(params):
     predictions = np.dot(chans, params[:-1]) + params[-1]
     return np.sum((predictions - energys)**2)
+
 
 initial_guess = np.ones(17)
 # bounds
@@ -46,7 +50,8 @@ print(result.x)
 
 # run the predictions
 predictions = np.dot(chans, result.x[:-1]) + result.x[-1]
-ofile = ROOT.TFile(f"root_selected/Run_list_selected_calibrated.root", "RECREATE")
+ofile = ROOT.TFile(
+    f"root_selected/Run_list_selected_calibrated.root", "RECREATE")
 hcal = ROOT.TH1F("hcal", "Calibrated Energy", 200, 2500, 4000)
 hcal.FillN(nentries, predictions, np.ones(nentries))
 hcal.Write()
