@@ -1,33 +1,29 @@
 import ROOT
 import sys
+import os
+from collections import OrderedDict
+import numpy as np
+import json
 
 
-def runFit(h, suffix):
-    xmin = h.GetXaxis().GetXmin()
-    xmax = h.GetXaxis().GetXmax()
+def runFit(h, suffix, mean=3100.0, xmin=0.0, xmax=7500.0, xfitmin=2950.0, xfitmax=3400.0, be=1.0):
     xmean = h.GetMean()
     xrms = h.GetRMS()
     xbins = h.GetNbinsX()
 
-    print("xmin = ", xmin)
-    print("xmax = ", xmax)
     print("xmean = ", xmean)
     print("xrms = ", xrms)
     print("xbins = ", xbins)
 
-    be = 1.0
-    xfitmin = 2950 * be
-    xfitmax = 3400 * be
-
-    var = ROOT.RooRealVar("energy_" + suffix, "energy", xmin, 7500, "ADCCount")
+    var = ROOT.RooRealVar("energy_" + suffix, "energy", xmin, xmax, "ADCCount")
     var.setRange("r1", xfitmin, xfitmax)
     datahist = ROOT.RooDataHist("datahist_" + suffix, "datahist",
                                 ROOT.RooArgList(var, "argdatahist"), h)
 
     mean = ROOT.RooRealVar("mean_" + suffix,  "mean",   3000.0*be,
-                           2500.*be,   3500.*be,   "GeV")
+                           2400.*be,   3600.*be,   "GeV")
     sigma = ROOT.RooRealVar("sigma_" + suffix, "sigma",  250.0*be,
-                            100.*be,  400.*be,   "GeV")
+                            50.*be,  400.*be,   "GeV")
     pdf = ROOT.RooGaussian("pdf_" + suffix, "pdf", var, mean, sigma)
 
     # run the fit
@@ -84,6 +80,12 @@ def runFit(h, suffix):
                        (sigma.getVal(), sigma.getError()))
     latex.DrawLatexNDC(0.20, 0.65, "#sigma / #mu = %.1f%%" %
                        (sigma.getVal()/mean.getVal()*100.))
+
+    # extra information
+    run = int(suffix.split("_")[1])
+    energy = be * 8.0
+    latex.DrawLatexNDC(0.65, 0.80, f"Run {run}")
+    latex.DrawLatexNDC(0.65, 0.75, f"E = {energy} GeV")
     frame.addObject(latex)
 
     # make pull histograms
@@ -110,14 +112,71 @@ def runFit(h, suffix):
 
     print("nevents: ", h.Integral(0, h.GetNbinsX()+1))
 
+    return (mean.getVal(), mean.getError()), (sigma.getVal(), sigma.getError())
 
-fname = "root_selected/Run_list_selected_calibrated.root"
-# fname = "h_lgcl0_Run347_new4.root"
-f = ROOT.TFile(fname)
-hcal = f.Get("hcal")
-hcal_unc = f.Get("hcal_unc")
-hcal_reg = f.Get("hcal_reg")
 
-runFit(hcal, "cal")
-runFit(hcal_unc, "uncal")
-runFit(hcal_reg, "reg")
+fitmin = 2850.0
+fitmax = 3600.0
+
+fitranges = {
+    370: (0.0, 3500.0, 1350.0, 1850.0, 0.5),
+    371: (2000.0, 7000.0, 4500, 5200.0, 1.5),
+    372: (4000.0, 8000.0, 6000.0, 7200.0, 2.0),
+    373: (6000.0, 14000.0, fitmin * 30.0 / 8.0, fitmax * 30.0 / 8.0, 30.0 / 8.0),
+    374: (0, 2000.0, fitmin / 4.0, fitmax / 4.0, 0.25),
+    375: (1000.0, 6000.0, fitmin, fitmax, 1.0),
+    376: (1000.0, 6000.0, fitmin, fitmax, 1.0),
+    377: (1000.0, 6000.0, fitmin, fitmax, 1.0),
+    378: (1000.0, 6000.0, fitmin, fitmax, 1.0),
+    379: (1000.0, 6000.0, fitmin, fitmax, 1.0),
+}
+
+mus = OrderedDict()
+muEs = OrderedDict()
+sigmas = OrderedDict()
+sigmaEs = OrderedDict()
+
+for run in range(370, 376):
+    fname = f"regressed/Run{run}_list.root"
+
+    if not os.path.exists(fname):
+        print(f"File {fname} does not exist")
+        continue
+
+    f = ROOT.TFile(fname)
+    hcal = f.Get("hcal")
+    hcal_unc = f.Get("hcal_unc")
+
+    (mu, muE), (sigma, sigmaE) = runFit(hcal, f"cal_{run}", xmin=fitranges[run][0], xmax=fitranges[run][1],
+                                        xfitmin=fitranges[run][2], xfitmax=fitranges[run][3], be=fitranges[run][4])
+    runFit(hcal_unc, f"uncal_{run}", xmin=fitranges[run][0], xmax=fitranges[run][1],
+           xfitmin=fitranges[run][2], xfitmax=fitranges[run][3], be=fitranges[run][4])
+
+    energy = fitranges[run][4] * 8.0
+    mus[energy] = mu
+    muEs[energy] = muE
+    sigmas[energy] = sigma / mu
+    sigmaEs[energy] = sigmaE / mu
+
+energys = np.array(list(mus.keys()))
+mus = np.array(list(mus.values()))
+muEs = np.array(list(muEs.values()))
+sigmas = np.array(list(sigmas.values()))
+sigmaEs = np.array(list(sigmaEs.values()))
+
+fitresults = {
+    "energys": energys.tolist(),
+    "mus": mus.tolist(),
+    "muEs": muEs.tolist(),
+    "sigmas": sigmas.tolist(),
+    "sigmaEs": sigmaEs.tolist()
+}
+
+with open("fitresults.json", "w") as f:
+    json.dump(fitresults, f)
+
+print("energys = ", energys)
+print("mus = ", mus)
+print("muEs = ", muEs)
+print("sigmas = ", sigmas)
+print("sigmaEs = ", sigmaEs)

@@ -7,6 +7,7 @@ from sklearn.linear_model import LinearRegression
 from scipy.optimize import minimize
 from scipy.stats import norm
 import json
+from modules.fitFunction import fitFunction, saveResults
 
 ROOT.gROOT.SetBatch(True)
 
@@ -36,11 +37,6 @@ for i in range(nentries):
     energys[i] = ROOT.gRandom.Gaus(3100, 3100*0.000002)
 
 
-def fitFunction(chans, scales):
-    predictions = np.dot(chans, scales[:-1])
-    return predictions
-
-
 def runLinearRegression(chans, target=3100.0):
     nentries = chans.shape[0]
     energys = np.ones(nentries) * target
@@ -50,7 +46,7 @@ def runLinearRegression(chans, target=3100.0):
         return np.sum(np.abs(predictions - energys))
 
     initial_guess = np.ones(17)
-    # bounds
+    bounds
     b = [(0, None) for i in range(16)] + [(-100, 100)]
     result = minimize(objective, initial_guess, bounds=b)
 
@@ -104,5 +100,5 @@ hcal_reg.Write()
 ofile.Close()
 
 # save the result to a json file
-with open("calibration.json", "w") as outfile:
-    json.dump(result.x.tolist(), outfile)
+
+saveResults(result.x.tolist(), "results.json")
