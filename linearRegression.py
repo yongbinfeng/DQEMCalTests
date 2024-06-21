@@ -46,7 +46,6 @@ def runLinearRegression(chans, target=3100.0):
         return np.sum(np.abs(predictions - energys))
 
     initial_guess = np.ones(17)
-    bounds
     b = [(0, None) for i in range(16)] + [(-100, 100)]
     result = minimize(objective, initial_guess, bounds=b)
 

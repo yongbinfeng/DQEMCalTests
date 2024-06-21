@@ -42,7 +42,7 @@ def AddOverflows(hinput, dolastbin=True):
         print("input must be a ROOT.TH1 or ROOT.THStack for Over/Underflows")
 
 
-def DrawHistos(myhistos, mylabels, xmin, xmax, xlabel, ymin, ymax, ylabel, outputname, dology=True, showratio=False, dologx=False, lheader=None, donormalize=False, binomialratio=False, yrmax=2.0, yrmin=0.0, yrlabel=None, leftlegend=False, mycolors=None, legendPos=None, legendNCols=1, linestyles=None, markerstyles=None, showpull=False, ypullmin=-3.99, ypullmax=3.99, drawashist=False, padsize=(2, 0.9, 1.1), setGridx=False, setGridy=False, drawoptions=None, legendoptions=None, ratiooptions=None, dologz=False, doth2=False, ratiobase=0, redrawihist=-1, nMaxDigits=None, addOverflow=False, addUnderflow=False, hratiopanel=None, doratios=None, hpulls=None, W_ref=600, outdir="plots", savepdf=True, zmin=0, zmax=2):
+def DrawHistos(myhistos, mylabels, xmin, xmax, xlabel, ymin, ymax, ylabel, outputname, dology=True, showratio=False, dologx=False, lheader=None, donormalize=False, binomialratio=False, yrmax=2.0, yrmin=0.0, yrlabel=None, leftlegend=False, mycolors=None, legendPos=None, legendNCols=1, linestyles=None, markerstyles=None, showpull=False, ypullmin=-3.99, ypullmax=3.99, drawashist=False, padsize=(2, 0.9, 1.1), setGridx=False, setGridy=False, drawoptions=None, legendoptions=None, ratiooptions=None, dologz=False, ratiobase=0, redrawihist=-1, nMaxDigits=None, addOverflow=False, addUnderflow=False, hratiopanel=None, doratios=None, hpulls=None, W_ref=600, outdir="plots", savepdf=True, zmin=0, zmax=2):
     # python feature: for immutable objects, default values are evaluated only once
     # need to be cautious when using mutable objects as default values
     # https://docs.python.org/3/reference/compound_stmts.html#function-definitions
@@ -97,8 +97,6 @@ def DrawHistos(myhistos, mylabels, xmin, xmax, xlabel, ymin, ymax, ylabel, outpu
         canvas.SetGrid(setGridx, setGridy)
         canvas.SetTicks(1, 1)
         padsize1 = 1.0
-        if doth2:
-            canvas.SetRightMargin(0.12)
         padsize2 = 0.
         padsize3 = 0.
         canvas.cd()
@@ -123,7 +121,9 @@ def DrawHistos(myhistos, mylabels, xmin, xmax, xlabel, ymin, ymax, ylabel, outpu
         canvas.SetBottomMargin(0.13)
         canvas.SetTopMargin(0.06)
 
+        doth2 = False
         if isinstance(myhistos[0], ROOT.TH2):
+            doth2 = True
             canvas.SetRightMargin(0.15)
             canvas.SetTopMargin(0.15)
             canvas.SetLeftMargin(0.12)
@@ -181,7 +181,7 @@ def DrawHistos(myhistos, mylabels, xmin, xmax, xlabel, ymin, ymax, ylabel, outpu
     else:
         h1 = ROOT.TH2F("h2" + outputname, "h2", 80, xmin, xmax, 80, ymin, ymax)
         if zmin != None and zmax != None:
-            # print(f"configuring z range to {zmin}, {zmax}")
+            print(f"configuring z range to {zmin}, {zmax}")
             h1.GetZaxis().SetRangeUser(zmin, zmax)
 
     # print "xmin : %f xmax : %f"%(xmin, xmax)

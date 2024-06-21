@@ -84,4 +84,4 @@ def plotCh2D(t, suffix, plotAvg=True):
     leg = f"Run {suffix}, E = {getEnergy(suffix)} GeV"
 
     DrawHistos([h2D], [], -0.5, 3.5, "X", -0.5, 3.5, "Y",
-               f"Run{suffix}_ch_lg_2D", dology=False, drawoptions="colz,text", dologz=True, legendPos=(0.30, 0.87, 0.70, 0.97), lheader=leg, outdir="plots/Ch2D")
+               f"Run{suffix}_ch_lg_2D", dology=False, drawoptions="colz,text", dologz=True, legendPos=(0.30, 0.87, 0.70, 0.97), lheader=leg, outdir="plots/Ch2D", zmin=1.0, zmax=2e3)

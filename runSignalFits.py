@@ -6,7 +6,7 @@ import numpy as np
 import json
 
 
-def runFit(h, suffix, mean=3100.0, xmin=0.0, xmax=7500.0, xfitmin=2950.0, xfitmax=3400.0, be=1.0):
+def runFit(h, suffix, mean=3100.0, xmin=0.0, xmax=7500.0, xfitmin=2950.0, xfitmax=3400.0, be=1.0, atte=1.0):
     xmean = h.GetMean()
     xrms = h.GetRMS()
     xbins = h.GetNbinsX()
@@ -20,10 +20,10 @@ def runFit(h, suffix, mean=3100.0, xmin=0.0, xmax=7500.0, xfitmin=2950.0, xfitma
     datahist = ROOT.RooDataHist("datahist_" + suffix, "datahist",
                                 ROOT.RooArgList(var, "argdatahist"), h)
 
-    mean = ROOT.RooRealVar("mean_" + suffix,  "mean",   3000.0*be,
-                           2400.*be,   3600.*be,   "GeV")
-    sigma = ROOT.RooRealVar("sigma_" + suffix, "sigma",  250.0*be,
-                            50.*be,  400.*be,   "GeV")
+    mean = ROOT.RooRealVar("mean_" + suffix,  "mean",   3000.0*be*atte,
+                           2400.*be*atte,   3600.*be*atte,   "GeV")
+    sigma = ROOT.RooRealVar("sigma_" + suffix, "sigma",  250.0*be*atte,
+                            50.*be*atte,  400.*be*atte,   "GeV")
     pdf = ROOT.RooGaussian("pdf_" + suffix, "pdf", var, mean, sigma)
 
     # run the fit
@@ -119,16 +119,25 @@ fitmin = 2850.0
 fitmax = 3600.0
 
 fitranges = {
-    370: (0.0, 3500.0, 1350.0, 1850.0, 0.5),
-    371: (2000.0, 7000.0, 4500, 5200.0, 1.5),
-    372: (4000.0, 8000.0, 6000.0, 7200.0, 2.0),
-    373: (6000.0, 14000.0, fitmin * 30.0 / 8.0, fitmax * 30.0 / 8.0, 30.0 / 8.0),
-    374: (0, 2000.0, fitmin / 4.0, fitmax / 4.0, 0.25),
-    375: (1000.0, 6000.0, fitmin, fitmax, 1.0),
-    376: (1000.0, 6000.0, fitmin, fitmax, 1.0),
-    377: (1000.0, 6000.0, fitmin, fitmax, 1.0),
-    378: (1000.0, 6000.0, fitmin, fitmax, 1.0),
-    379: (1000.0, 6000.0, fitmin, fitmax, 1.0),
+    370: (0.0, 3500.0, 1350.0, 1850.0, 0.5, 1.0),
+    371: (2000.0, 7000.0, 4500, 5200.0, 1.5, 1.0),
+    372: (4000.0, 8000.0, 6000.0, 7200.0, 2.0, 1.0),
+    373: (6000.0, 14000.0, fitmin * 30.0 / 8.0, fitmax * 30.0 / 8.0, 30.0 / 8.0, 1.0),
+    374: (0, 2000.0, fitmin / 4.0, fitmax / 4.0, 0.25, 1.0),
+    375: (1000.0, 6000.0, fitmin, fitmax, 1.0, 1.0),
+    376: (1000.0, 6000.0, fitmin, fitmax, 1.0, 1.0),
+    377: (1000.0, 6000.0, fitmin, fitmax, 1.0, 1.0),
+    378: (1000.0, 6000.0, fitmin, fitmax, 1.0, 1.0),
+    379: (1000.0, 6000.0, fitmin, fitmax, 1.0, 1.0),
+
+    500: (0.0, 2000.0, 1100.0, 1400.0, 1.0, 0.4),
+    501: (0.0, 2000.0, 1100.0, 1400.0, 1.0, 0.4),
+    502: (0.0, 2000.0, 1100.0, 1400.0, 1.0, 0.4),
+    503: (0.0, 2000.0, 1100.0, 1400.0, 1.0, 0.4),
+    504: (0.0, 2000.0, 1100.0, 1400.0, 1.0, 0.4),
+    505: (0.0, 2000.0, 1100.0, 1400.0, 1.0, 0.4),
+    506: (0.0, 2000.0, 1100.0, 1400.0, 1.0, 0.4),
+    507: (0.0, 2000.0, 1100.0, 1400.0, 1.0, 0.4),
 }
 
 mus = OrderedDict()
@@ -136,7 +145,7 @@ muEs = OrderedDict()
 sigmas = OrderedDict()
 sigmaEs = OrderedDict()
 
-for run in range(370, 376):
+for run in range(500, 508):
     fname = f"regressed/Run{run}_list.root"
 
     if not os.path.exists(fname):
@@ -148,9 +157,9 @@ for run in range(370, 376):
     hcal_unc = f.Get("hcal_unc")
 
     (mu, muE), (sigma, sigmaE) = runFit(hcal, f"cal_{run}", xmin=fitranges[run][0], xmax=fitranges[run][1],
-                                        xfitmin=fitranges[run][2], xfitmax=fitranges[run][3], be=fitranges[run][4])
+                                        xfitmin=fitranges[run][2], xfitmax=fitranges[run][3], be=fitranges[run][4], atte=fitranges[run][5])
     runFit(hcal_unc, f"uncal_{run}", xmin=fitranges[run][0], xmax=fitranges[run][1],
-           xfitmin=fitranges[run][2], xfitmax=fitranges[run][3], be=fitranges[run][4])
+           xfitmin=fitranges[run][2], xfitmax=fitranges[run][3], be=fitranges[run][4], atte=fitranges[run][5])
 
     energy = fitranges[run][4] * 8.0
     mus[energy] = mu
