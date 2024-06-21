@@ -20,6 +20,11 @@ def Evaluate(run):
     nentries = t.GetEntries()
     print(f"Number of entries: {nentries}")
 
+    if nentries == 0:
+        f.Close()
+        print("No entries in the file ", fname)
+        return
+
     chans = np.zeros((nentries, 16))
 
     for i in range(nentries):

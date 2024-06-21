@@ -15,8 +15,9 @@ def select(run):
     nentries = t.GetEntries()
 
     # make plots of sum of ch_lg
-    from modules.utils import plotChSum
+    from modules.utils import plotChSum, plotCh2D
     plotChSum(t, run)
+    plotCh2D(t, run)
 
     # create a new file
     fout = ROOT.TFile(f"root_selected/Run{run}_list_selected.root", "RECREATE")
@@ -34,9 +35,9 @@ def select(run):
     f.Close()
 
     print(
-        f"Selected {nevts} out of {nentries} events for Run {run}, efficiency = {nevts/nentries:.2f}")
+        f"Selected {nevts} out of {nentries} events for Run {run}, efficiency = {nevts/(nentries+1e-3):.2f}")
 
 
 if __name__ == "__main__":
-    for i in range(360, 370):
+    for i in range(330, 440):
         select(i)

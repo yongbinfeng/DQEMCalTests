@@ -67,7 +67,7 @@ def DrawHistos(myhistos, mylabels, xmin, xmax, xlabel, ymin, ymax, ylabel, outpu
     ROOT.gStyle.SetErrorX(0.5)
 
     ROOT.gStyle.SetPalette(1)
-    ROOT.gStyle.SetPaintTextFormat(".3f")
+    ROOT.gStyle.SetPaintTextFormat(".1f")
 
     if nMaxDigits:
         # print(f"set the maximum number of digits {nMaxDigits}")
@@ -84,8 +84,6 @@ def DrawHistos(myhistos, mylabels, xmin, xmax, xlabel, ymin, ymax, ylabel, outpu
     H_ref = 500
     W = W_ref
     H = H_ref
-
-    iPeriod = 0
 
     npads = 1 + showratio + showpull
 
@@ -124,6 +122,12 @@ def DrawHistos(myhistos, mylabels, xmin, xmax, xlabel, ymin, ymax, ylabel, outpu
         canvas.SetLeftMargin(0.15)
         canvas.SetBottomMargin(0.13)
         canvas.SetTopMargin(0.06)
+
+        if isinstance(myhistos[0], ROOT.TH2):
+            canvas.SetRightMargin(0.15)
+            canvas.SetTopMargin(0.15)
+            canvas.SetLeftMargin(0.12)
+            canvas.SetBottomMargin(0.12)
 
     if npads == 2:
         pad1 = ROOT.TPad("pad1" + outputname, "pad1", 0, padsize2, 1, 1)
@@ -189,7 +193,7 @@ def DrawHistos(myhistos, mylabels, xmin, xmax, xlabel, ymin, ymax, ylabel, outpu
     h1.GetYaxis().SetLabelSize(0.045/(padsize1+padsize3))
     h1.GetXaxis().SetTitleSize(0.050/(padsize1+padsize3))
     h1.GetXaxis().SetLabelSize(0.045/(padsize1+padsize3))
-    h1.GetYaxis().SetTitleOffset(1.35*(padsize1+padsize3)*(600.0/W))
+    h1.GetYaxis().SetTitleOffset(1.2*(padsize1+padsize3)*(600.0/W))
     h1.GetXaxis().SetTitleOffset(1.1*(padsize1+padsize3))
 
     if showratio or showpull:
@@ -315,7 +319,7 @@ def DrawHistos(myhistos, mylabels, xmin, xmax, xlabel, ymin, ymax, ylabel, outpu
         pad1.RedrawAxis()
         # frame = pad1.GetFrame()
         # frame.Draw()
-        if len(mylabels):
+        if len(mylabels) or lheader:
             legend.Draw()
         pad1.Update()
 
@@ -326,8 +330,7 @@ def DrawHistos(myhistos, mylabels, xmin, xmax, xlabel, ymin, ymax, ylabel, outpu
         canvas.RedrawAxis("G")
         # frame = canvas.GetFrame()
         # frame.Draw()
-        if len(mylabels):
-            # print("draw legend", len(mylabels))
+        if len(mylabels) or lheader:
             legend.Draw()
         canvas.Update()
 
