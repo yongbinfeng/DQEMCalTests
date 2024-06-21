@@ -15,15 +15,8 @@ def select(run):
     nentries = t.GetEntries()
 
     # make plots of sum of ch_lg
-    h = ROOT.TH1F(f"h_{run}", "h", 500, 0, 10000)
-    t.Draw(f"Sum$(ch_lg)>>h_{run}")
-    c = ROOT.TCanvas(f"c_{run}", f"c_{run}", 800, 600)
-    c.SetLogy()
-    h.SetTitle(f"Run {run}")
-    h.GetXaxis().SetTitle("Energy [ADC]")
-    h.GetYaxis().SetTitle("Counts")
-    h.Draw()
-    c.SaveAs(f"plots/Run{run}_sum_ch_lg.png")
+    from modules.utils import plotChSum
+    plotChSum(t, run)
 
     # create a new file
     fout = ROOT.TFile(f"root_selected/Run{run}_list_selected.root", "RECREATE")
@@ -32,7 +25,7 @@ def select(run):
     nevts = 0
     for i in range(nentries):
         t.GetEntry(i)
-        if sum(t.ch_lg) > 2600 and sum(t.ch_lg) < 3400:
+        if sum(t.ch_lg) > 2000 and sum(t.ch_lg) < 4000:
             tout.Fill()
             nevts += 1
 
