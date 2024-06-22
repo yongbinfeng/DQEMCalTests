@@ -3,7 +3,8 @@ import numpy as np
 import ROOT
 import os
 
-scales = loadResults("results.json")
+# scales = loadResults("results.json")
+scales = loadResults("results/results_withattu.json")
 scales = np.array(scales)
 print(scales)
 
@@ -36,16 +37,16 @@ def Evaluate(run):
     predictions_unc = fitFunction(chans, np.ones(17))
 
     ofile = ROOT.TFile(f"regressed/Run{run}_list.root", "RECREATE")
-    hcal = ROOT.TH1F("hcal", "Calibrated Energy", 600, 0, 14000)
+    hcal = ROOT.TH1F("hcal", "Calibrated Energy", 1000, 0, 4000)
     hcal.FillN(nentries, predictions, np.ones(nentries))
     hcal.Write()
 
-    hcal_unc = ROOT.TH1F("hcal_unc", "Uncalibrated Energy", 600, 0, 14000)
+    hcal_unc = ROOT.TH1F("hcal_unc", "Uncalibrated Energy", 1000, 0, 4000)
     hcal_unc.FillN(nentries, predictions_unc, np.ones(nentries))
     hcal_unc.Write()
 
     ofile.Close()
 
 
-for i in range(500, 510):
+for i in range(495, 497):
     Evaluate(i)

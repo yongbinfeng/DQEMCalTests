@@ -108,18 +108,8 @@ def worker(run):
 
 
 if __name__ == "__main__":
-    import argparse
-    parser = argparse.ArgumentParser(description="Make ROOT files")
-    parser.add_argument("-s", "--start", type=int,
-                        default=329, help="Run number to start")
-    parser.add_argument("-e", "--end", type=int,
-                        default=528, help="Run number to end")
-    # not sure why it keeps parsing unknown -b
-    args, uknown = parser.parse_known_args()
-
-    run_start = args.start
-    run_end = args.end + 1
-    print(f"Making ROOT files for runs {run_start} to {run_end-1}")
+    from modules.utils import parseRuns
+    run_start, run_end = parseRuns()
 
     with Pool(8) as p:
         p.map(worker, range(run_start, run_end))

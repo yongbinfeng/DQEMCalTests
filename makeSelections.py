@@ -26,7 +26,8 @@ def select(run):
     nevts = 0
     for i in range(nentries):
         t.GetEntry(i)
-        if sum(t.ch_lg) > 2000 and sum(t.ch_lg) < 4000:
+        # if sum(t.ch_lg) > 2000 and sum(t.ch_lg) < 4000:
+        if sum(t.ch_lg) > 500.0 and sum(t.ch_lg) < 1500.0:
             tout.Fill()
             nevts += 1
 
@@ -39,5 +40,7 @@ def select(run):
 
 
 if __name__ == "__main__":
-    for i in range(330, 430):
+    from modules.utils import parseRuns
+    run_start, run_end = parseRuns()
+    for i in range(run_start, run_end):
         select(i)

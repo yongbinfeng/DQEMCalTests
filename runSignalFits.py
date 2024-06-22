@@ -5,6 +5,8 @@ from collections import OrderedDict
 import numpy as np
 import json
 
+ROOT.gROOT.SetBatch(True)
+
 
 def runFit(h, suffix, mean=3100.0, xmin=0.0, xmax=7500.0, xfitmin=2950.0, xfitmax=3400.0, be=1.0, atte=1.0):
     xmean = h.GetMean()
@@ -107,8 +109,8 @@ def runFit(h, suffix, mean=3100.0, xmin=0.0, xmax=7500.0, xfitmin=2950.0, xfitma
     paddown.cd()
     frame2.Draw()
 
-    c.SaveAs(f"plots/fit_{suffix}.pdf")
-    c.SaveAs(f"plots/fit_{suffix}.png")
+    c.SaveAs(f"plots/fits/fit_{suffix}.pdf")
+    c.SaveAs(f"plots/fits/fit_{suffix}.png")
 
     print("nevents: ", h.Integral(0, h.GetNbinsX()+1))
 
@@ -130,14 +132,18 @@ fitranges = {
     378: (1000.0, 6000.0, fitmin, fitmax, 1.0, 1.0),
     379: (1000.0, 6000.0, fitmin, fitmax, 1.0, 1.0),
 
-    500: (0.0, 2000.0, 1100.0, 1400.0, 1.0, 0.4),
-    501: (0.0, 2000.0, 1100.0, 1400.0, 1.0, 0.4),
-    502: (0.0, 2000.0, 1100.0, 1400.0, 1.0, 0.4),
-    503: (0.0, 2000.0, 1100.0, 1400.0, 1.0, 0.4),
-    504: (0.0, 2000.0, 1100.0, 1400.0, 1.0, 0.4),
-    505: (0.0, 2000.0, 1100.0, 1400.0, 1.0, 0.4),
-    506: (0.0, 2000.0, 1100.0, 1400.0, 1.0, 0.4),
-    507: (0.0, 2000.0, 1100.0, 1400.0, 1.0, 0.4),
+    500: (0.0, 2000.0, 800.0, 1120.0, 1.0, 0.33),
+    501: (0.0, 2000.0, 800.0, 1120.0, 1.0, 0.33),
+    502: (0.0, 2000.0, 800.0, 1120.0, 1.0, 0.33),
+    503: (0.0, 2000.0, 800.0, 1120.0, 1.0, 0.33),
+    504: (0.0, 2000.0, 800.0, 1120.0, 1.0, 0.33),
+    505: (0.0, 2000.0, 800.0, 1120.0, 1.0, 0.33),
+    506: (0.0, 2000.0, 800.0, 1120.0, 1.0, 0.33),
+    507: (0.0, 2000.0, 800.0, 1120.0, 1.0, 0.33),
+    513: (0.0, 2000.0, 850.0, 1120.0, 1.0, 0.33),
+    495: (0.0, 2000.0, 850.0, 1120.0, 1.0, 0.33),
+    496: (0.0, 2000.0, 850.0, 1120.0, 1.0, 0.33),
+
 }
 
 mus = OrderedDict()
@@ -145,7 +151,7 @@ muEs = OrderedDict()
 sigmas = OrderedDict()
 sigmaEs = OrderedDict()
 
-for run in range(500, 508):
+for run in range(495, 497):
     fname = f"regressed/Run{run}_list.root"
 
     if not os.path.exists(fname):

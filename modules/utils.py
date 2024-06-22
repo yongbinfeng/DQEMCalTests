@@ -16,10 +16,32 @@ def getEnergy(run):
         return 30.0
     elif run == 374:
         return 2.0
-    elif run >= 375 and run <= 436:
+    elif run >= 375 and run <= 491:
         return 8.0
+    elif run == 492:
+        return 8.0
+    elif run >= 493 and run <= 495:
+        return 4
+    elif run == 496:
+        return 8.0
+    elif run >= 498 and run <= 499:
+        return 16.0
+    elif run >= 500 and run <= 507:
+        return 8.0
+    elif run == 508:
+        print("Caution Caution Caution. This is muon mode")
+        return 8.0
+    elif run >= 509 and run <= 513:
+        return 8.0
+    elif run >= 514 and run <= 515:
+        return 3.0
+    elif run >= 516 and run <= 517:
+        return 30.0
+    elif run >= 521 and run <= 526:
+        print("Caution Caution Caution. This is muon mode")
+        return 30.0
     else:
-        print(f"Run {run} not found")
+        print(f"Run {run} not found in the energy information collector")
         sys.exit(1)
 
 
@@ -85,3 +107,16 @@ def plotCh2D(t, suffix, plotAvg=True):
 
     DrawHistos([h2D], [], -0.5, 3.5, "X", -0.5, 3.5, "Y",
                f"Run{suffix}_ch_lg_2D", dology=False, drawoptions="colz,text", dologz=True, legendPos=(0.30, 0.87, 0.70, 0.97), lheader=leg, outdir="plots/Ch2D", zmin=1.0, zmax=2e3)
+
+
+def parseRuns():
+    import argparse
+    parser = argparse.ArgumentParser(description="Make ROOT files")
+    parser.add_argument("-s", "--start", type=int,
+                        default=329, help="Run number to start")
+    parser.add_argument("-e", "--end", type=int,
+                        default=528, help="Run number to end")
+    args, unknown = parser.parse_known_args()
+    run_start, run_end = args.start, args.end + 1
+    print(f"Selecting runs from {run_start} to {run_end-1}")
+    return run_start, run_end

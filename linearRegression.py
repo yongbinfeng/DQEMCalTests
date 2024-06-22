@@ -12,7 +12,7 @@ from modules.fitFunction import fitFunction, saveResults
 ROOT.gROOT.SetBatch(True)
 
 t = ROOT.TChain("save")
-for run in range(360, 370):
+for run in range(513, 514):
     fname = f"root_selected/Run{run}_list_selected.root"
     if not os.path.exists(fname):
         print(f"File {fname} does not exist")
@@ -34,10 +34,8 @@ for i in range(nentries):
     for j in range(16):
         chans[i][j] = t.ch_lg[j]
 
-    energys[i] = ROOT.gRandom.Gaus(3100, 3100*0.000002)
 
-
-def runLinearRegression(chans, target=3100.0):
+def runLinearRegression(chans, target):
     nentries = chans.shape[0]
     energys = np.ones(nentries) * target
 
@@ -56,11 +54,11 @@ def selectEvents(chans, scales):
     predictions = fitFunction(chans, scales)
     mu, std = norm.fit(predictions)
     print(f"mu = {mu}, sigma = {std}")
-    selection = ((predictions > mu - 2.0*std) & (predictions < mu + 2.0*std))
+    selection = ((predictions > mu - 2.0*std) & (predictions < mu + 3.0*std))
     return selection, mu
 
 
-target = 3100.0
+target = 3100.0 * 0.3
 chans_reg = chans.copy()
 for i in range(20):
     print("Iteration ", i+1)
@@ -86,13 +84,15 @@ print(result.x)
 # run the predictions
 ofile = ROOT.TFile(
     f"root_selected/Run_list_selected_calibrated.root", "RECREATE")
-hcal = ROOT.TH1F("hcal", "Calibrated Energy", 200, 2000, 4000)
+hcal = ROOT.TH1F("hcal", "Calibrated Energy", 200, target-1000, target+1000)
 hcal.FillN(nentries, predictions, np.ones(nentries))
 hcal.Write()
-hcal_unc = ROOT.TH1F("hcal_unc", "Uncalibrated Energy", 200, 2000, 4000)
+hcal_unc = ROOT.TH1F("hcal_unc", "Uncalibrated Energy",
+                     200, target-1000, target+1000)
 hcal_unc.FillN(nentries, predictions_unc, np.ones(nentries))
 hcal_unc.Write()
-hcal_reg = ROOT.TH1F("hcal_reg", "Calibrated Energy (Reg)", 200, 2000, 4000)
+hcal_reg = ROOT.TH1F("hcal_reg", "Calibrated Energy (Reg)",
+                     200, target-1000, target+1000)
 hcal_reg.FillN(chans_reg.shape[0], predictions_reg,
                np.ones(chans_reg.shape[0]))
 hcal_reg.Write()
@@ -100,4 +100,4 @@ ofile.Close()
 
 # save the result to a json file
 
-saveResults(result.x.tolist(), "results.json")
+saveResults(result.x.tolist(), "results/results_withattu.json")
