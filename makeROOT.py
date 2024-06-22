@@ -1,3 +1,4 @@
+from multiprocessing import Pool, current_process
 from array import array
 from ROOT import *
 import sys
@@ -35,7 +36,9 @@ def makeROOT(run):
         print(f"File data/Run{run}_list.txt does not exist")
         return
 
-    print(f"Making ROOT file for Run {run}")
+    pid = current_process().pid
+
+    print(f"Making ROOT file for Run {run} with Process ID: {pid}")
     trigID = array('i', [0])
     trigTime = array('d', [0])
     ch_lg = std.vector[int]()
@@ -64,9 +67,7 @@ def makeROOT(run):
     nevents = 0
 
     with open(f"data/Run{run}_list.txt") as infile:
-
         for line in infile:
-
             if ("//" in line):
                 continue
             if ("Tstamp" in line):
@@ -89,17 +90,36 @@ def makeROOT(run):
                 ch_hg.clear()
                 ch_lg_calib.clear()
                 nevents += 1
-                if (nevents % 1000 == 0):
-                    print(nevents)
+                if (nevents % 10000 == 0):
+                    print(
+                        f"Process ID: {pid}, Run {run}, and processed {nevents} events")
 
     fout.cd()
     tout.Write()
     fout.Save()
 
     print(f"Total events: {nevents}")
-    print(f"ROOT file saved as root/Run{run}_list.root")
+    print(f"ROOT file saved as root/Run{run}_list.root with Process ID: {pid}")
     print("\n\n")
 
 
-for run in range(430, 520):
+def worker(run):
     makeROOT(run)
+
+
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description="Make ROOT files")
+    parser.add_argument("-s", "--start", type=int,
+                        default=329, help="Run number to start")
+    parser.add_argument("-e", "--end", type=int,
+                        default=528, help="Run number to end")
+    # not sure why it keeps parsing unknown -b
+    args, uknown = parser.parse_known_args()
+
+    run_start = args.start
+    run_end = args.end + 1
+    print(f"Making ROOT files for runs {run_start} to {run_end-1}")
+
+    with Pool(8) as p:
+        p.map(worker, range(run_start, run_end))
