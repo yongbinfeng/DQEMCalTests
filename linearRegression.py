@@ -10,7 +10,7 @@ from modules.fitFunction import fitFunction, saveResults
 ROOT.gROOT.SetBatch(True)
 
 t = ROOT.TChain("save")
-for run in range(513, 514):
+for run in range(500, 508):
     fname = f"root_selected/Run{run}_list_selected.root"
     if not os.path.exists(fname):
         print(f"File {fname} does not exist")

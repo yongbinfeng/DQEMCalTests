@@ -4,7 +4,7 @@ import ROOT
 import os
 import numpy as np
 from scipy.stats import norm
-from modules.fitFunction import fitFunction, saveResults
+from modules.fitFunction import fitFunction
 from modules.utils import getChannelMap
 from modules.CNNModel import buildCNNModel
 import tensorflow as tf
@@ -42,7 +42,7 @@ def trainCNNModel(chans, energys):
     model = buildCNNModel()
     model.summary()
     # Compile the model with a custom learning rate
-    initial_learning_rate = 0.001  # Initial learning rate
+    initial_learning_rate = 0.005  # Initial learning rate
     optimizer = tf.keras.optimizers.Adam(learning_rate=initial_learning_rate)
     model.compile(optimizer=optimizer, loss='mean_absolute_error')
 
@@ -57,25 +57,9 @@ def trainCNNModel(chans, energys):
     return model
 
 
-def selectEvents(chans, scales):
-    predictions = fitFunction(chans, scales)
-    mu, std = norm.fit(predictions)
-    print(f"mu = {mu}, sigma = {std}")
-    selection = ((predictions > mu - 2.0*std) & (predictions < mu + 3.0*std))
-    return selection, mu
-
-
 target = 3100.0 * 0.3
 energys = np.random.normal(target, target * 0.01, nentries)
-chans_reg = chans.copy()
-for i in range(1):
-    print("Iteration ", i+1)
-    result = trainCNNModel(chans_reg, energys)
-    # result = runLinearRegression(chans_reg, target)
-    # result = runLinearRegression(chans_reg, target)
-    # selection, _ = selectEvents(chans_reg, result.x)
-    # chans_reg = chans_reg[selection]
-    # print("Number of selected events: ", chans_reg.shape[0])
+result = trainCNNModel(chans, energys)
 
 # predictions = fitFunction(chans, result.x)
 predictions = result.predict(chans)

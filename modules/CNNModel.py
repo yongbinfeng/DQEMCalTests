@@ -9,10 +9,10 @@ class CustomConvLayer(layers.Layer):
             lambda x: x / (tf.reduce_sum(x, axis=[1, 2], keepdims=True) + 1e-6))
         # First convolutional layer with ReLU activation
         self.conv1 = layers.Conv2D(
-            8, kernel_size, padding='same', activation='relu')
+            8, (3, 3), padding='same', activation='relu')
         # Second convolutional layer with 2 filters, no bias, and no activation
         self.conv2 = layers.Conv2D(
-            1, kernel_size, padding='same', activation='sigmoid')
+            1, (4, 4), padding='same', activation='sigmoid')
 
     def call(self, inputs):
         x = self.scaling(inputs)
