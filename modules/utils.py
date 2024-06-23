@@ -20,9 +20,9 @@ def getEnergy(run):
         return 8.0
     elif run == 492:
         return 8.0
-    elif run >= 493 and run <= 495:
+    elif run >= 493 and run <= 494:
         return 4
-    elif run == 496:
+    elif run >= 495 and run <= 496:
         return 8.0
     elif run >= 498 and run <= 499:
         return 16.0

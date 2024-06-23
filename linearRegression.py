@@ -3,10 +3,8 @@
 import ROOT
 import os
 import numpy as np
-from sklearn.linear_model import LinearRegression
 from scipy.optimize import minimize
 from scipy.stats import norm
-import json
 from modules.fitFunction import fitFunction, saveResults
 
 ROOT.gROOT.SetBatch(True)
