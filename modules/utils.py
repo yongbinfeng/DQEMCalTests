@@ -1,7 +1,10 @@
 # collection for all the functions that are used in the main script
 import sys
+import os
 from collections import OrderedDict
 from .runinfo import runinfo, GetFitRange
+from .plotStyles import DrawHistos
+import ROOT
 
 
 def getEnergy(run):
@@ -13,9 +16,6 @@ def getEnergy(run):
 
 
 def plotChSum(t, suffix):
-    import ROOT
-    from .plotStyles import DrawHistos
-
     energy = getEnergy(suffix)
     be, atte = runinfo[suffix]
     _, xmax, _, _ = GetFitRange(energy, atte)
@@ -53,9 +53,6 @@ def getChannelMap(chan):
 
 
 def plotCh2D(t, suffix, plotAvg=True, applySel=True):
-    import ROOT
-    from .plotStyles import DrawHistos
-
     # use RDF such that the loop is only needed once
     rdf = ROOT.RDataFrame(t)
 
@@ -90,6 +87,17 @@ def plotCh2D(t, suffix, plotAvg=True, applySel=True):
 
     DrawHistos([h2D], [], -0.5, 3.5, "X", -0.5, 3.5, "Y",
                f"Run{suffix}_ch_lg_2D", dology=False, drawoptions="colz,text", dologz=True, legendPos=(0.30, 0.87, 0.70, 0.97), lheader=leg, outdir="plots/Ch2D", zmin=1.0, zmax=2e3)
+
+
+def plotWeight(run):
+    fname = f"regressed/Run{run}_list.root"
+    if not os.path.exists(fname):
+        print(f"File {fname} does not exist")
+        return
+    f = ROOT.TFile(fname)
+    h2D = f.Get("hweights")
+    DrawHistos([h2D], [], -0.5, 3.5, "X", -0.5, 3.5, "Y", f"Run{run}_weights", dology=False, drawoptions="colz,text,ERROR", dologz=False, legendPos=(
+        0.30, 0.87, 0.70, 0.97), lheader=f"Run {run}, E = {getEnergy(run)} GeV", outdir="plots/Weights", zmin=0.70, zmax=1.10)
 
 
 def parseRuns():

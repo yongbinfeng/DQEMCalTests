@@ -67,7 +67,7 @@ def DrawHistos(myhistos, mylabels, xmin, xmax, xlabel, ymin, ymax, ylabel, outpu
     ROOT.gStyle.SetErrorX(0.5)
 
     ROOT.gStyle.SetPalette(1)
-    ROOT.gStyle.SetPaintTextFormat(".1f")
+    ROOT.gStyle.SetPaintTextFormat(".2f")
 
     if nMaxDigits:
         # print(f"set the maximum number of digits {nMaxDigits}")

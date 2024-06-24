@@ -1,7 +1,6 @@
 import ROOT
 import os
 import sys
-
 ROOT.gROOT.SetBatch(True)
 
 
@@ -27,7 +26,8 @@ def makePlot(run):
 
 
 if __name__ == "__main__":
-    from modules.utils import parseRuns
+    from modules.utils import parseRuns, plotWeight
     run_start, run_end = parseRuns()
     for i in range(run_start, run_end):
-        makePlot(i)
+        # makePlot(i)
+        plotWeight(i)
