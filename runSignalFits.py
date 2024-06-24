@@ -128,10 +128,12 @@ if __name__ == "__main__":
 
     from modules.runinfo import runinfo, GetFitRange
 
-    mus = OrderedDict()
-    muEs = OrderedDict()
-    sigmas = OrderedDict()
-    sigmaEs = OrderedDict()
+    runs = []
+    energys = []
+    mus = []
+    muEs = []
+    sigmas = []
+    sigmaEs = []
 
     for run in range(run_start, run_end):
         fname = f"regressed/Run{run}_list.root"
@@ -155,7 +157,15 @@ if __name__ == "__main__":
         hcal_unc = f.Get("hcal_unc")
 
         energy = be * 8.0
-        if energy > 20.0:
+        if energy == 8.0:
+            hcal.Rebin(2)
+            hcal_linear.Rebin(2)
+            hcal_unc.Rebin(2)
+        elif energy == 12.0:
+            hcal.Rebin(4)
+            hcal_linear.Rebin(4)
+            hcal_unc.Rebin(4)
+        elif energy >= 20.0:
             hcal.Rebin(5)
             hcal_linear.Rebin(5)
             hcal_unc.Rebin(5)
@@ -167,23 +177,20 @@ if __name__ == "__main__":
         runFit(hcal_unc, f"uncal_{run}", xmin=fitranges[0], xmax=fitranges[1],
                xfitmin=fitranges[2], xfitmax=fitranges[3], be=be, hasAtten=hasAtten)
 
-        mus[energy] = mu
-        muEs[energy] = muE
-        sigmas[energy] = sigma / mu
-        sigmaEs[energy] = sigmaE / mu
-
-    energys = np.array(list(mus.keys()))
-    mus = np.array(list(mus.values()))
-    muEs = np.array(list(muEs.values()))
-    sigmas = np.array(list(sigmas.values()))
-    sigmaEs = np.array(list(sigmaEs.values()))
+        runs.append(run)
+        energys.append(energy)
+        mus.append(mu)
+        muEs.append(muE)
+        sigmas.append(sigma / mu)
+        sigmaEs.append(sigmaE / mu)
 
     fitresults = {
-        "energys": energys.tolist(),
-        "mus": mus.tolist(),
-        "muEs": muEs.tolist(),
-        "sigmas": sigmas.tolist(),
-        "sigmaEs": sigmaEs.tolist()
+        "runs": runs,
+        "energys": energys,
+        "mus": mus,
+        "muEs": muEs,
+        "sigmas": sigmas,
+        "sigmaEs": sigmaEs
     }
 
     with open("fitresults.json", "w") as f:

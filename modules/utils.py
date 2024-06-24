@@ -1,61 +1,32 @@
 # collection for all the functions that are used in the main script
 import sys
 from collections import OrderedDict
+from .runinfo import runinfo, GetFitRange
 
 
 def getEnergy(run):
-    if run <= 369:
-        return 8.0
-    elif run == 370:
-        return 4.0
-    elif run == 371:
-        return 12.0
-    elif run == 372:
-        return 16.0
-    elif run == 373:
-        return 30.0
-    elif run == 374:
-        return 2.0
-    elif run >= 375 and run <= 491:
-        return 8.0
-    elif run == 492:
-        return 8.0
-    elif run >= 493 and run <= 494:
-        return 4
-    elif run >= 495 and run <= 496:
-        return 8.0
-    elif run >= 498 and run <= 499:
-        return 16.0
-    elif run >= 500 and run <= 507:
-        return 8.0
-    elif run == 508:
-        print("Caution Caution Caution. This is muon mode")
-        return 8.0
-    elif run >= 509 and run <= 513:
-        return 8.0
-    elif run >= 514 and run <= 515:
-        return 3.0
-    elif run >= 516 and run <= 517:
-        return 30.0
-    elif run >= 521 and run <= 526:
-        print("Caution Caution Caution. This is muon mode")
-        return 30.0
-    else:
-        print(f"Run {run} not found in the energy information collector")
-        sys.exit(1)
+    try:
+        return runinfo[run][0] * 8.0
+    except KeyError:
+        print(f"Run {run} not found in runinfo")
+        return -1
 
 
 def plotChSum(t, suffix):
     import ROOT
     from .plotStyles import DrawHistos
 
-    h = ROOT.TH1F(f"h_{suffix}", "h", 500, 0, 10000)
+    energy = getEnergy(suffix)
+    be, atte = runinfo[suffix]
+    _, xmax, _, _ = GetFitRange(energy, atte)
+
+    h = ROOT.TH1F(f"h_{suffix}", "h", 500, 0, xmax)
     t.Draw(f"Sum$(ch_lg)>>h_{suffix}")
 
     vmax = h.GetMaximum()
     outname = f"Run{suffix}_sum_ch_lg"
 
-    DrawHistos([h], ["Run "+str(suffix)], 0, 1e4, "Energy [ADC]", 0.1, vmax * 1e2,
+    DrawHistos([h], ["Run "+str(suffix)], 0, xmax, "Energy [ADC]", 0.1, vmax * 1e2,
                "Counts", outname, dology=True, outdir="plots/ChSum")
 
 
@@ -81,18 +52,30 @@ def getChannelMap(chan):
     return chanMap[chan]
 
 
-def plotCh2D(t, suffix, plotAvg=True):
+def plotCh2D(t, suffix, plotAvg=True, applySel=True):
     import ROOT
     from .plotStyles import DrawHistos
 
     # use RDF such that the loop is only needed once
     rdf = ROOT.RDataFrame(t)
 
+    energy = getEnergy(suffix)
+
+    if applySel:
+        be, atte = runinfo[suffix]
+        _, _, fitmin, fitmax = GetFitRange(energy, atte)
+        # fitmin and fitmax are basically the electron dominated region
+        rdf = rdf.Define("ADCSum", "Sum(ch_lg)").Filter(
+            f"ADCSum > {fitmin}").Filter(f'ADCSum < {fitmax}')
+
+    nEvents = rdf.Count().GetValue()
+
     histos = OrderedDict()
     for ch in range(16):
         x, y = getChannelMap(ch)
         rdf = rdf.Define(f"x_{ch}", str(x)).Define(f"y_{ch}", str(
             y)).Define(f"count_{suffix}_{ch}", f"ch_lg[{ch}]")
+
         histos[ch] = rdf.Histo2D(
             (f"h_Chs_{suffix}_{ch}", "h", 4, -0.5, 3.5, 4, -0.5, 3.5), f"x_{ch}", f"y_{ch}", f"count_{suffix}_{ch}")
 
@@ -101,7 +84,7 @@ def plotCh2D(t, suffix, plotAvg=True):
         h2D.Add(histos[ch].GetValue())
 
     if plotAvg:
-        h2D.Scale(1.0 / (t.GetEntries()+0.001))
+        h2D.Scale(1.0 / (nEvents+0.001))
 
     leg = f"Run {suffix}, E = {getEnergy(suffix)} GeV"
 
