@@ -8,10 +8,15 @@ import json
 ROOT.gROOT.SetBatch(True)
 
 
-def runFit(h, suffix, mean=3100.0, xmin=0.0, xmax=7500.0, xfitmin=2950.0, xfitmax=3400.0, be=1.0, atte=1.0):
+def runFit(h, suffix, mean=3100.0, xmin=0.0, xmax=7500.0, xfitmin=2950.0, xfitmax=3400.0, be=1.0, hasAtten=False):
     xmean = h.GetMean()
     xrms = h.GetRMS()
     xbins = h.GetNbinsX()
+
+    if hasAtten:
+        atte = 0.33
+    else:
+        atte = 1.0
 
     print("xmean = ", xmean)
     print("xrms = ", xrms)
@@ -117,81 +122,75 @@ def runFit(h, suffix, mean=3100.0, xmin=0.0, xmax=7500.0, xfitmin=2950.0, xfitma
     return (mean.getVal(), mean.getError()), (sigma.getVal(), sigma.getError())
 
 
-fitmin = 2850.0
-fitmax = 3600.0
+if __name__ == "__main__":
+    from modules.utils import parseRuns
+    run_start, run_end = parseRuns()
 
-fitranges = {
-    370: (0.0, 3500.0, 1350.0, 1850.0, 0.5, 1.0),
-    371: (2000.0, 7000.0, 4500, 5200.0, 1.5, 1.0),
-    372: (4000.0, 8000.0, 6000.0, 7200.0, 2.0, 1.0),
-    373: (6000.0, 14000.0, fitmin * 30.0 / 8.0, fitmax * 30.0 / 8.0, 30.0 / 8.0, 1.0),
-    374: (0, 2000.0, fitmin / 4.0, fitmax / 4.0, 0.25, 1.0),
-    375: (1000.0, 6000.0, fitmin, fitmax, 1.0, 1.0),
-    376: (1000.0, 6000.0, fitmin, fitmax, 1.0, 1.0),
-    377: (1000.0, 6000.0, fitmin, fitmax, 1.0, 1.0),
-    378: (1000.0, 6000.0, fitmin, fitmax, 1.0, 1.0),
-    379: (1000.0, 6000.0, fitmin, fitmax, 1.0, 1.0),
+    from modules.runinfo import runinfo, GetFitRange
 
-    500: (0.0, 2000.0, 800.0, 1120.0, 1.0, 0.33),
-    501: (0.0, 2000.0, 800.0, 1120.0, 1.0, 0.33),
-    502: (0.0, 2000.0, 800.0, 1120.0, 1.0, 0.33),
-    503: (0.0, 2000.0, 800.0, 1120.0, 1.0, 0.33),
-    504: (0.0, 2000.0, 800.0, 1120.0, 1.0, 0.33),
-    505: (0.0, 2000.0, 800.0, 1120.0, 1.0, 0.33),
-    506: (0.0, 2000.0, 800.0, 1120.0, 1.0, 0.33),
-    507: (0.0, 2000.0, 800.0, 1120.0, 1.0, 0.33),
-    513: (0.0, 2000.0, 850.0, 1120.0, 1.0, 0.33),
-    495: (0.0, 2000.0, 850.0, 1120.0, 1.0, 0.33),
-    496: (0.0, 2000.0, 850.0, 1120.0, 1.0, 0.33),
+    mus = OrderedDict()
+    muEs = OrderedDict()
+    sigmas = OrderedDict()
+    sigmaEs = OrderedDict()
 
-}
+    for run in range(run_start, run_end):
+        fname = f"regressed/Run{run}_list.root"
 
-mus = OrderedDict()
-muEs = OrderedDict()
-sigmas = OrderedDict()
-sigmaEs = OrderedDict()
+        if not os.path.exists(fname):
+            print(f"File {fname} does not exist")
+            continue
 
-for run in range(495, 524):
-    fname = f"regressed/Run{run}_list.root"
+        if run not in runinfo:
+            print(f"Run {run} not in run info")
+            continue
 
-    if not os.path.exists(fname):
-        print(f"File {fname} does not exist")
-        continue
+        be, hasAtten = runinfo[run]
+        print(f"Run {run} has energy {be*8.0} GeV and attenuation {hasAtten}")
+        fitranges = GetFitRange(be*8.0, hasAtten)
+        print(f"Fit ranges: {fitranges}")
 
-    f = ROOT.TFile(fname)
-    hcal = f.Get("hcal")
-    hcal_unc = f.Get("hcal_unc")
+        f = ROOT.TFile(fname)
+        hcal = f.Get("hcal")
+        hcal_linear = f.Get("hcal_linear")
+        hcal_unc = f.Get("hcal_unc")
 
-    (mu, muE), (sigma, sigmaE) = runFit(hcal, f"cal_{run}", xmin=fitranges[run][0], xmax=fitranges[run][1],
-                                        xfitmin=fitranges[run][2], xfitmax=fitranges[run][3], be=fitranges[run][4], atte=fitranges[run][5])
-    runFit(hcal_unc, f"uncal_{run}", xmin=fitranges[run][0], xmax=fitranges[run][1],
-           xfitmin=fitranges[run][2], xfitmax=fitranges[run][3], be=fitranges[run][4], atte=fitranges[run][5])
+        energy = be * 8.0
+        if energy > 20.0:
+            hcal.Rebin(5)
+            hcal_linear.Rebin(5)
+            hcal_unc.Rebin(5)
 
-    energy = fitranges[run][4] * 8.0
-    mus[energy] = mu
-    muEs[energy] = muE
-    sigmas[energy] = sigma / mu
-    sigmaEs[energy] = sigmaE / mu
+        (mu, muE), (sigma, sigmaE) = runFit(hcal, f"cal_{run}", xmin=fitranges[0], xmax=fitranges[1],
+                                            xfitmin=fitranges[2], xfitmax=fitranges[3], be=be, hasAtten=hasAtten)
+        runFit(hcal_linear, f"linear_{run}",
+               xmin=fitranges[0], xmax=fitranges[1], xfitmin=fitranges[2], xfitmax=fitranges[3], be=be, hasAtten=hasAtten)
+        runFit(hcal_unc, f"uncal_{run}", xmin=fitranges[0], xmax=fitranges[1],
+               xfitmin=fitranges[2], xfitmax=fitranges[3], be=be, hasAtten=hasAtten)
 
-energys = np.array(list(mus.keys()))
-mus = np.array(list(mus.values()))
-muEs = np.array(list(muEs.values()))
-sigmas = np.array(list(sigmas.values()))
-sigmaEs = np.array(list(sigmaEs.values()))
+        mus[energy] = mu
+        muEs[energy] = muE
+        sigmas[energy] = sigma / mu
+        sigmaEs[energy] = sigmaE / mu
 
-fitresults = {
-    "energys": energys.tolist(),
-    "mus": mus.tolist(),
-    "muEs": muEs.tolist(),
-    "sigmas": sigmas.tolist(),
-    "sigmaEs": sigmaEs.tolist()
-}
+    energys = np.array(list(mus.keys()))
+    mus = np.array(list(mus.values()))
+    muEs = np.array(list(muEs.values()))
+    sigmas = np.array(list(sigmas.values()))
+    sigmaEs = np.array(list(sigmaEs.values()))
 
-with open("fitresults.json", "w") as f:
-    json.dump(fitresults, f)
+    fitresults = {
+        "energys": energys.tolist(),
+        "mus": mus.tolist(),
+        "muEs": muEs.tolist(),
+        "sigmas": sigmas.tolist(),
+        "sigmaEs": sigmaEs.tolist()
+    }
 
-print("energys = ", energys)
-print("mus = ", mus)
-print("muEs = ", muEs)
-print("sigmas = ", sigmas)
-print("sigmaEs = ", sigmaEs)
+    with open("fitresults.json", "w") as f:
+        json.dump(fitresults, f)
+
+    print("energys = ", energys)
+    print("mus = ", mus)
+    print("muEs = ", muEs)
+    print("sigmas = ", sigmas)
+    print("sigmaEs = ", sigmaEs)
