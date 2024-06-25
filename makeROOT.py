@@ -10,24 +10,13 @@ gROOT.SetBatch(True)
 chlist = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
 chlist_str = ["00", "01", "02", "03", "04", "05", "06",
               "07", "08", "09", "10", "11", "12", "13", "14", "15"]
-ch_calib = [203.7,
-            190.8,
-            192.3,
-            201.1,
-            199.1,
-            207.2,
-            196.2,
-            218.2,
-            199.0,
-            201.0,
-            203.7,
-            203.7,
-            192.9,
-            187.7,
-            186.5,
-            181.5
-            ]
-calib_mean = sum(ch_calib)/len(ch_calib)
+
+
+def convertStrToVal(ch):
+    if ch == "-":
+        return 0
+    else:
+        return int(ch)
 
 
 def makeROOT(run):
@@ -43,7 +32,6 @@ def makeROOT(run):
     trigTime = array('d', [0])
     ch_lg = std.vector[int]()
     ch_hg = std.vector[int]()
-    ch_lg_calib = std.vector[float]()
 
     fout = TFile(f"root/Run{run}_list.root", "RECREATE")
     tout = TTree("save", "save")
@@ -61,9 +49,6 @@ def makeROOT(run):
     tout.Branch('ch_hg', ch_hg)
     tout.SetBranchAddress("ch_hg", ch_hg)
 
-    tout.Branch('ch_lg_calib', ch_lg_calib)
-    tout.SetBranchAddress("ch_lg_calib", ch_lg_calib)
-
     nevents = 0
 
     with open(f"data/Run{run}_list.txt") as infile:
@@ -79,16 +64,13 @@ def makeROOT(run):
 
             for ch in chlist:
                 if ("1  "+chlist_str[ch] in line):
-                    ch_lg.push_back(int(line.split()[2]))
-                    ch_hg.push_back(int(line.split()[3]))
-                    ch_lg_calib.push_back(
-                        int(line.split()[2])*ch_calib[ch]/calib_mean)
+                    ch_lg.push_back(convertStrToVal(line.split()[2]))
+                    ch_hg.push_back(convertStrToVal(line.split()[3]))
 
             if (ch_lg.size() == len(chlist)):
                 tout.Fill()
                 ch_lg.clear()
                 ch_hg.clear()
-                ch_lg_calib.clear()
                 nevents += 1
                 if (nevents % 10000 == 0):
                     print(
@@ -111,5 +93,5 @@ if __name__ == "__main__":
     from modules.utils import parseRuns
     run_start, run_end = parseRuns()
 
-    with Pool(8) as p:
+    with Pool(16) as p:
         p.map(worker, range(run_start, run_end))
