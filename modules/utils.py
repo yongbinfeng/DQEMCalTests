@@ -44,6 +44,19 @@ def getChannelMap(chan):
     return chanMap[chan]
 
 
+def plotChMap(outdir="plots/ChMap"):
+    """
+    plot the channel map
+    """
+    h2D = ROOT.TH2F("h_Chs", "h", 4, -0.5, 3.5, 4, -0.5, 3.5)
+    for ch in range(16):
+        x, y = getChannelMap(ch)
+        h2D.Fill(x, y, ch)
+
+    DrawHistos([h2D], [], -0.5, 3.5, "X", -0.5, 3.5, "Y",
+               "ChMap", dology=False, drawoptions="text", dologz=False, legendPos=(0.30, 0.87, 0.70, 0.97), lheader="Channel Map", outdir=outdir, zmin=0.0, zmax=15.0, textformat=".0f")
+
+
 def plotCh2D(t, suffix, plotAvg=True, applySel=True):
     # use RDF such that the loop is only needed once
     rdf = ROOT.RDataFrame(t)
@@ -81,7 +94,7 @@ def plotCh2D(t, suffix, plotAvg=True, applySel=True):
                f"Run{suffix}_ch_lg_2D", dology=False, drawoptions="colz,text", dologz=True, legendPos=(0.30, 0.87, 0.70, 0.97), lheader=leg, outdir="plots/Ch2D", zmin=1.0, zmax=2e3)
 
 
-def plotCh1D(t, suffix, plotAvg=True, applySel=False):
+def plotCh1D(t, suffix, plotAvg=True, applySel=False, makePlots=True, xmin=0, xmax=1000, xbins=100):
     rdf = ROOT.RDataFrame(t)
 
     energy = GetEnergy(suffix)
@@ -100,28 +113,38 @@ def plotCh1D(t, suffix, plotAvg=True, applySel=False):
         rdf = rdf.Define(f"ch_hg_{ch}", f"ch_hg[{ch}]").Define(
             f"ch_lg_{ch}", f"ch_lg[{ch}]")
         histos_hg[ch] = rdf.Histo1D(
-            (f"h_Chs_hg_{suffix}_{ch}", "h", 100, 0, 1000), f"ch_hg_{ch}")
+            (f"h_Chs_hg_{suffix}_{ch}", "h", xbins, xmin, xmax), f"ch_hg_{ch}")
         histos_lg[ch] = rdf.Histo1D(
-            (f"h_Chs_lg_{suffix}_{ch}", "h", 100, 0, 1000), f"ch_lg_{ch}")
+            (f"h_Chs_lg_{suffix}_{ch}", "h", xbins, xmin, xmax), f"ch_lg_{ch}")
 
     if plotAvg:
         for ch in range(16):
             histos_hg[ch].Scale(1.0 / (nEvents+0.001))
             histos_lg[ch].Scale(1.0 / (nEvents+0.001))
 
-    title = GetTitle(suffix)
+    if makePlots:
+        # make the actual plots
+        title = GetTitle(suffix)
 
-    ltitle = ROOT.TLatex(0.20, 0.95, title)
-    ltitle.SetNDC()
-    ltitle.SetTextFont(42)
-    ltitle.SetTextSize(0.04)
+        ltitle = ROOT.TLatex(0.20, 0.95, title)
+        ltitle.SetNDC()
+        ltitle.SetTextFont(42)
+        ltitle.SetTextSize(0.04)
 
-    mycolors = [15 + i*5 for i in range(16)]
+        mycolors = [15 + i*5 for i in range(16)]
 
-    DrawHistos([histos_hg[ch].GetValue() for ch in range(16)], [f"Ch {ch}" for ch in range(16)], 0, 1000, "ADC", 1e-6, 1e3, "Counts",
-               f"Run{suffix}_ch_hg_1D", dology=True, outdir="plots/Ch1D/hg", legendPos=(0.35, 0.70, 0.90, 0.90), mycolors=mycolors, extraToDraws=[ltitle], legendNCols=4, addOverflow=True)
-    DrawHistos([histos_lg[ch].GetValue() for ch in range(16)], [f"Ch {ch}" for ch in range(16)], 0, 1000, "ADC", 1e-6, 1e3, "Counts",
-               f"Run{suffix}_ch_lg_1D", dology=True, outdir="plots/Ch1D/lg", legendPos=(0.35, 0.70, 0.90, 0.90), mycolors=mycolors, extraToDraws=[ltitle], legendNCols=4, addOverflow=True)
+        DrawHistos([histos_hg[ch].GetValue() for ch in range(16)], [f"Ch {ch}" for ch in range(16)], xmin, xmax, "High Gain ADC", 1e-6, 1e3, "Counts",
+                   f"Run{suffix}_ch_hg_1D", dology=True, outdir="plots/Ch1D/hg", legendPos=(0.35, 0.70, 0.90, 0.90), mycolors=mycolors, extraToDraws=[ltitle], legendNCols=4, addOverflow=True)
+        DrawHistos([histos_lg[ch].GetValue() for ch in range(16)], [f"Ch {ch}" for ch in range(16)], xmin, xmax, "Low Gain ADC", 1e-6, 1e3, "Counts",
+                   f"Run{suffix}_ch_lg_1D", dology=True, outdir="plots/Ch1D/lg", legendPos=(0.35, 0.70, 0.90, 0.90), mycolors=mycolors, extraToDraws=[ltitle], legendNCols=4, addOverflow=True)
+
+    for ch in range(16):
+        histos_hg[ch] = histos_hg[ch].GetValue()
+        histos_hg[ch].SetDirectory(0)
+        histos_lg[ch] = histos_lg[ch].GetValue()
+        histos_lg[ch].SetDirectory(0)
+
+    return histos_hg, histos_lg
 
 
 def plotWeight(run):

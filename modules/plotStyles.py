@@ -42,7 +42,7 @@ def AddOverflows(hinput, dolastbin=True):
         print("input must be a ROOT.TH1 or ROOT.THStack for Over/Underflows")
 
 
-def DrawHistos(myhistos, mylabels, xmin, xmax, xlabel, ymin, ymax, ylabel, outputname, dology=True, showratio=False, dologx=False, lheader=None, donormalize=False, binomialratio=False, yrmax=2.0, yrmin=0.0, yrlabel=None, leftlegend=False, mycolors=None, legendPos=None, legendNCols=1, linestyles=None, markerstyles=None, showpull=False, ypullmin=-3.99, ypullmax=3.99, drawashist=False, padsize=(2, 0.9, 1.1), setGridx=False, setGridy=False, drawoptions=None, legendoptions=None, ratiooptions=None, dologz=False, ratiobase=0, redrawihist=-1, nMaxDigits=None, addOverflow=False, addUnderflow=False, hratiopanel=None, doratios=None, hpulls=None, W_ref=600, outdir="plots", savepdf=True, zmin=0, zmax=2, extraToDraws=[]):
+def DrawHistos(myhistos, mylabels, xmin, xmax, xlabel, ymin, ymax, ylabel, outputname, dology=True, showratio=False, dologx=False, lheader=None, donormalize=False, binomialratio=False, yrmax=2.0, yrmin=0.0, yrlabel=None, leftlegend=False, mycolors=None, legendPos=None, legendNCols=1, linestyles=None, markerstyles=None, showpull=False, ypullmin=-3.99, ypullmax=3.99, drawashist=False, padsize=(2, 0.9, 1.1), setGridx=False, setGridy=False, drawoptions=None, legendoptions=None, ratiooptions=None, dologz=False, ratiobase=0, redrawihist=-1, nMaxDigits=None, addOverflow=False, addUnderflow=False, hratiopanel=None, doratios=None, hpulls=None, W_ref=600, outdir="plots", savepdf=True, zmin=0, zmax=2, extraToDraws=[], textformat=".2f"):
     # python feature: for immutable objects, default values are evaluated only once
     # need to be cautious when using mutable objects as default values
     # https://docs.python.org/3/reference/compound_stmts.html#function-definitions
@@ -67,7 +67,7 @@ def DrawHistos(myhistos, mylabels, xmin, xmax, xlabel, ymin, ymax, ylabel, outpu
     ROOT.gStyle.SetErrorX(0.5)
 
     ROOT.gStyle.SetPalette(1)
-    ROOT.gStyle.SetPaintTextFormat(".2f")
+    ROOT.gStyle.SetPaintTextFormat(textformat)
 
     if nMaxDigits:
         # print(f"set the maximum number of digits {nMaxDigits}")
