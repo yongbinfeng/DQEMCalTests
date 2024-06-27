@@ -133,19 +133,19 @@ runinfo = {
     600: (2.5, 0, 1, 0),
     601: (2.5, 0, 1, 0),
     602: (2.5, 0, 1, 0),
-    604: (2.75, 0, 1, 0),
-    605: (2.75, 0, 1, 0),
-    607: (2.75, 0, 1, 0),
-    609: (2.75, 0, 1, 0),
-    610: (2.75, 0, 1, 0),
-    611: (2.75, 0, 1, 0),
-    612: (2.75, 0, 1, 0),
+    604: (3.75, 0, 1, 0),
+    605: (3.75, 0, 1, 0),
+    607: (3.75, 0, 1, 0),
+    609: (3.75, 0, 1, 0),
+    610: (3.75, 0, 1, 0),
+    611: (3.75, 0, 1, 0),
+    612: (3.75, 0, 1, 0),
     # start muon mode
-    614: (2.75, 0, 1, 1),
-    615: (2.75, 0, 1, 1),
-    616: (2.75, 0, 1, 1),
-    617: (2.75, 0, 1, 1),
-    618: (2.75, 0, 1, 1),
+    614: (3.75, 0, 1, 1),
+    615: (3.75, 0, 1, 1),
+    616: (3.75, 0, 1, 1),
+    617: (3.75, 0, 1, 1),
+    618: (3.75, 0, 1, 1),
     # 619, 620, 621 are proton runs
     619: (15.0, 0, 1, 0),
     620: (15.0, 0, 1, 0),
@@ -217,10 +217,23 @@ for run in range(375, 492):
 
 
 def GetRunInfo(run):
+    run = int(run)
     if run not in runinfo:
         print(f"Run {run} not found in runinfo")
         return None
     return runinfo[run]
+
+
+def CheckRunExists(run):
+    try:
+        run = int(run)
+        info = GetRunInfo(run)
+        if info is None:
+            return False
+        return True
+    except ValueError:
+        print(f"Run {run} is not a number")
+        return False
 
 
 def GetEnergy(run):
@@ -249,3 +262,21 @@ def IsMuonRun(run):
     if info is None:
         return None
     return info[3]
+
+
+def GetTitle(run):
+    if not CheckRunExists(run):
+        return None
+    energy = GetEnergy(run)
+    hasAtten = HasAttenuator(run)
+    hasFilter = HasFilter(run)
+    isMuon = IsMuonRun(run)
+
+    title = f"Run {run}, {energy} GeV"
+    if hasAtten:
+        title += ", with attenuator"
+    if hasFilter:
+        title += ", with filter"
+    if isMuon:
+        title += ", muon run"
+    return title

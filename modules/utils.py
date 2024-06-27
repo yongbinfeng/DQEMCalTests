@@ -2,21 +2,13 @@
 import sys
 import os
 from collections import OrderedDict
-from .runinfo import runinfo, GetFitRange
+from .runinfo import runinfo, GetFitRange, GetEnergy, GetTitle
 from .plotStyles import DrawHistos
 import ROOT
 
 
-def getEnergy(run):
-    try:
-        return runinfo[run][0] * 8.0
-    except KeyError:
-        print(f"Run {run} not found in runinfo")
-        return -1
-
-
 def plotChSum(t, suffix):
-    energy = getEnergy(suffix)
+    energy = GetEnergy(suffix)
     be, atte = runinfo[suffix]
     _, xmax, _, _ = GetFitRange(energy, atte)
 
@@ -56,7 +48,7 @@ def plotCh2D(t, suffix, plotAvg=True, applySel=True):
     # use RDF such that the loop is only needed once
     rdf = ROOT.RDataFrame(t)
 
-    energy = getEnergy(suffix)
+    energy = GetEnergy(suffix)
 
     if applySel:
         be, atte = runinfo[suffix]
@@ -83,13 +75,60 @@ def plotCh2D(t, suffix, plotAvg=True, applySel=True):
     if plotAvg:
         h2D.Scale(1.0 / (nEvents+0.001))
 
-    leg = f"Run {suffix}, E = {getEnergy(suffix)} GeV"
+    leg = f"Run {suffix}, E = {GetEnergy(suffix)} GeV"
 
     DrawHistos([h2D], [], -0.5, 3.5, "X", -0.5, 3.5, "Y",
                f"Run{suffix}_ch_lg_2D", dology=False, drawoptions="colz,text", dologz=True, legendPos=(0.30, 0.87, 0.70, 0.97), lheader=leg, outdir="plots/Ch2D", zmin=1.0, zmax=2e3)
 
 
+def plotCh1D(t, suffix, plotAvg=True, applySel=False):
+    rdf = ROOT.RDataFrame(t)
+
+    energy = GetEnergy(suffix)
+
+    if applySel:
+        be, atte = runinfo[suffix]
+        _, _, fitmin, fitmax = GetFitRange(energy, atte)
+        rdf = rdf.Define("ADCSum", "Sum(ch_lg)").Filter(
+            f"ADCSum > {fitmin}").Filter(f'ADCSum < {fitmax}')
+
+    nEvents = rdf.Count().GetValue()
+
+    histos_hg = OrderedDict()
+    histos_lg = OrderedDict()
+    for ch in range(16):
+        rdf = rdf.Define(f"ch_hg_{ch}", f"ch_hg[{ch}]").Define(
+            f"ch_lg_{ch}", f"ch_lg[{ch}]")
+        histos_hg[ch] = rdf.Histo1D(
+            (f"h_Chs_hg_{suffix}_{ch}", "h", 100, 0, 1000), f"ch_hg_{ch}")
+        histos_lg[ch] = rdf.Histo1D(
+            (f"h_Chs_lg_{suffix}_{ch}", "h", 100, 0, 1000), f"ch_lg_{ch}")
+
+    if plotAvg:
+        for ch in range(16):
+            histos_hg[ch].Scale(1.0 / (nEvents+0.001))
+            histos_lg[ch].Scale(1.0 / (nEvents+0.001))
+
+    title = GetTitle(suffix)
+
+    ltitle = ROOT.TLatex(0.20, 0.95, title)
+    ltitle.SetNDC()
+    ltitle.SetTextFont(42)
+    ltitle.SetTextSize(0.04)
+
+    mycolors = [15 + i*5 for i in range(16)]
+
+    DrawHistos([histos_hg[ch].GetValue() for ch in range(16)], [f"Ch {ch}" for ch in range(16)], 0, 1000, "ADC", 1e-6, 1e3, "Counts",
+               f"Run{suffix}_ch_hg_1D", dology=True, outdir="plots/Ch1D/hg", legendPos=(0.35, 0.70, 0.90, 0.90), mycolors=mycolors, extraToDraws=[ltitle], legendNCols=4, addOverflow=True)
+    DrawHistos([histos_lg[ch].GetValue() for ch in range(16)], [f"Ch {ch}" for ch in range(16)], 0, 1000, "ADC", 1e-6, 1e3, "Counts",
+               f"Run{suffix}_ch_lg_1D", dology=True, outdir="plots/Ch1D/lg", legendPos=(0.35, 0.70, 0.90, 0.90), mycolors=mycolors, extraToDraws=[ltitle], legendNCols=4, addOverflow=True)
+
+
 def plotWeight(run):
+    """
+    plot the weights from the regression.
+    works only for regressed files with CNN
+    """
     fname = f"regressed/Run{run}_list.root"
     if not os.path.exists(fname):
         print(f"File {fname} does not exist")
@@ -97,7 +136,7 @@ def plotWeight(run):
     f = ROOT.TFile(fname)
     h2D = f.Get("hweights")
     DrawHistos([h2D], [], -0.5, 3.5, "X", -0.5, 3.5, "Y", f"Run{run}_weights", dology=False, drawoptions="colz,text,ERROR", dologz=False, legendPos=(
-        0.30, 0.87, 0.70, 0.97), lheader=f"Run {run}, E = {getEnergy(run)} GeV", outdir="plots/Weights", zmin=0.70, zmax=1.10)
+        0.30, 0.87, 0.70, 0.97), lheader=f"Run {run}, E = {GetEnergy(run)} GeV", outdir="plots/Weights", zmin=0.70, zmax=1.10)
 
 
 def parseRuns():
