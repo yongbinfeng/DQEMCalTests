@@ -1,7 +1,7 @@
 import numpy as np
 import json
 import ROOT
-from .runinfo import GetEnergy
+from .runinfo import GetEnergy, HasAttenuator, HasFilter, IsMuonRun
 import os
 
 
@@ -87,7 +87,6 @@ def runFit(h, suffix, mean=3100.0, xmin=0.0, xmax=7500.0, xfitmin=2950.0, xfitma
     frame.Draw()
 
     chi2 = frame.chiSquare()
-    ndf = frame.GetNbinsX() - 2
     latex = ROOT.TLatex()
     latex.SetNDC()
     latex.SetTextColor(1)
@@ -103,9 +102,21 @@ def runFit(h, suffix, mean=3100.0, xmin=0.0, xmax=7500.0, xfitmin=2950.0, xfitma
 
     # extra information
     run = int(suffix.split("_")[1])
-    energy = GetEnergy(run)
-    latex.DrawLatexNDC(0.65, 0.80, f"Run {run}")
-    latex.DrawLatexNDC(0.65, 0.75, f"E = {energy} GeV")
+    yval = 0.80
+    xval = 0.70
+    latex.DrawLatexNDC(xval, yval, f"Run {run}")
+    yval -= 0.05
+    latex.DrawLatexNDC(xval, yval, f"E = {GetEnergy(run)} GeV")
+    yval -= 0.05
+    if HasAttenuator(run):
+        latex.DrawLatexNDC(xval, yval, "with attenuator")
+        yval -= 0.05
+    if HasFilter(run):
+        latex.DrawLatexNDC(xval, yval, "with filter")
+        yval -= 0.05
+    if IsMuonRun(run):
+        latex.DrawLatexNDC(xval, yval, "muon run")
+        yval -= 0.05
     frame.addObject(latex)
 
     # make pull histograms
