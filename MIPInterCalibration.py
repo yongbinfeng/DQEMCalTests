@@ -30,13 +30,13 @@ nentries = t.GetEntries()
 print(f"Number of entries: {nentries}")
 
 histos_hg, _ = plotCh1D(t, run, plotAvg=False, applySel=False,
-                        makePlots=False, xmin=100.0, xmax=600.0, xbins=40)
+                        makePlots=False, xmin=100.0, xmax=1000.0, xbins=40)
 
 means = OrderedDict()
 sigmas = OrderedDict()
 for ch in range(16):
     (mean, mean_err), (sigma, sigma_err) = runFit(histos_hg[ch], f"cal_{run}_{ch}",
-                                                  xmin=100.0, xmax=600.0, mean=300.0, xfitmin=270.0, xfitmax=530.0, be=1.0, hasAtten=False, outdir="plots/MIPCalib")
+                                                  xmin=100.0, xmax=1000.0, mean=500.0, xfitmin=400.0, xfitmax=700.0, be=1.0, hasAtten=False, outdir="plots/MIPCalib")
     means[ch] = (mean, mean_err)
     sigmas[ch] = (sigma, sigma_err)
 
