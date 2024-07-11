@@ -43,6 +43,7 @@ def makePlot(run, doChSum=True, doCh2D=True, doCh1D=False, doWeight=False):
 if __name__ == "__main__":
     run_start, run_end = parseRuns()
     for i in range(run_start, run_end):
-        if IsMuonRun(i):
-            makePlot(i, doChSum=False, doCh2D=False,
-                     doCh1D=True, doWeight=False)
+        makePlot(i, doChSum=True, doCh2D=True, doCh1D=True, doWeight=False)
+        # if IsMuonRun(i):
+        #    makePlot(i, doChSum=False, doCh2D=False,
+        #             doCh1D=True, doWeight=False)
