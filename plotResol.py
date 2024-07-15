@@ -25,14 +25,14 @@ gMean.SetMarkerColor(2)
 gMean.SetLineColor(2)
 
 
-def myScale(x, par):
-    return par[0] + par[1] * x[0]
-
-
-fitFunc1 = ROOT.TF1("fitFunc1", myScale, 1.0, 35, 2)
-fitFunc1.SetParameters(0.0, 0.0)
+# def myScale(x, par):
+#    return par[0] + par[1] * x[0]
+#
+#
+# fitFunc1 = ROOT.TF1("fitFunc1", myScale, 1.0, 35, 2)
+# fitFunc1.SetParameters(0.0, 0.0)
 # Fit the function to the data
-gMean.Fit(fitFunc1, "R")
+# gMean.Fit(fitFunc1, "R")
 
 
 gSigma.SetMarkerStyle(20)
@@ -45,8 +45,8 @@ def myFunction(x, par):
     return np.sqrt(par[0]*par[0] + par[1]*par[1] / x[0])
 
 
-fitFunc = ROOT.TF1("fitFunc", myFunction, 3.0, 20, 2)
-fitFunc.SetParameters(3.0, 0.1)
+# fitFunc = ROOT.TF1("fitFunc", myFunction, 3.0, 20, 2)
+# fitFunc.SetParameters(3.0, 0.1)
 # Fit the function to the data
 # gSigma.Fit(fitFunc, "R")
 
@@ -79,13 +79,14 @@ def AddRunInfo(g):
 # fResol.SetLineStyle(3)
 
 
-def BNLResol(x, par):
-    a = 0.021
-    b = 0.081
-    return np.sqrt(a*a + b*b / x[0])
-
-
-fBNLResol = ROOT.TF1("fBNLResol", BNLResol, 3.0, 20, 0)
+# def BNLResol(x, par):
+#    a = 0.021
+#    b = 0.081
+#    return np.sqrt(a*a + b*b / x[0])
+#
+#
+fBNLResol = ROOT.TF1(
+    "fBNLResol", "sqrt(0.021*0.021 + 0.081*0.081/x)", 3.0, 20, 0)
 fBNLResol.SetLineColor(4)
 fBNLResol.SetMarkerColor(4)
 fBNLResol.SetLineWidth(4)

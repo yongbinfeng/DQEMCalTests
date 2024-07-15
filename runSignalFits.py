@@ -12,7 +12,7 @@ if __name__ == "__main__":
     run_start, run_end = parseRuns()
 
     from modules.runinfo import runinfo, GetFitRange
-    from modules.fitFunction import runFit
+    from modules.fitFunction import runFit, runMIPFit
 
     runs = []
     energys = []
@@ -32,36 +32,50 @@ if __name__ == "__main__":
             print(f"Run {run} not in run info")
             continue
 
-        be, hasAtten = runinfo[run]
-        print(f"Run {run} has energy {be*8.0} GeV and attenuation {hasAtten}")
-        fitranges = GetFitRange(be*8.0, hasAtten)
+        be, hasAtten, hasFilter, _ = runinfo[run]
+        print(f"Run {run} has energy {be*8.0} GeV")
+        print(f"attenuation {hasAtten}, neural density filter {hasFilter}")
+        fitranges = GetFitRange(be*8.0, hasAtten, hasFilter)
+        if fitranges is None:
+            print(f"Fit range not found for run {run}")
+            continue
         print(f"Fit ranges: {fitranges}")
 
         f = ROOT.TFile(fname)
-        hcal = f.Get("hcal")
+        hcal = f.Get("hcal_mip")
         hcal_linear = f.Get("hcal_linear")
         hcal_unc = f.Get("hcal_unc")
 
         energy = be * 8.0
         if energy == 8.0:
             hcal.Rebin(2)
-            hcal_linear.Rebin(2)
-            hcal_unc.Rebin(2)
-        elif energy == 12.0:
+        elif energy >= 12.0 and energy < 20.0:
             hcal.Rebin(4)
-            hcal_linear.Rebin(4)
-            hcal_unc.Rebin(4)
         elif energy >= 20.0:
             hcal.Rebin(5)
-            hcal_linear.Rebin(5)
-            hcal_unc.Rebin(5)
 
         (mu, muE), (sigma, sigmaE) = runFit(hcal, f"cal_{run}", xmin=fitranges[0], xmax=fitranges[1],
-                                            xfitmin=fitranges[2], xfitmax=fitranges[3], be=be, hasAtten=hasAtten)
-        runFit(hcal_linear, f"linear_{run}",
-               xmin=fitranges[0], xmax=fitranges[1], xfitmin=fitranges[2], xfitmax=fitranges[3], be=be, hasAtten=hasAtten)
-        runFit(hcal_unc, f"uncal_{run}", xmin=fitranges[0], xmax=fitranges[1],
-               xfitmin=fitranges[2], xfitmax=fitranges[3], be=be, hasAtten=hasAtten)
+                                            xfitmin=fitranges[2], xfitmax=fitranges[3])
+
+        if hcal_linear:
+            if energy == 8.0:
+                hcal_linear.Rebin(2)
+            elif energy == 12.0:
+                hcal_linear.Rebin(4)
+            elif energy >= 20.0:
+                hcal_linear.Rebin(5)
+            runFit(hcal_linear, f"linear_{run}",
+                   xmin=fitranges[0], xmax=fitranges[1], xfitmin=fitranges[2], xfitmax=fitranges[3], be=be, hasAtten=hasAtten)
+
+        if hcal_unc:
+            if energy == 8.0:
+                hcal_unc.Rebin(2)
+            elif energy == 12.0:
+                hcal_unc.Rebin(4)
+            elif energy >= 20.0:
+                hcal_unc.Rebin(5)
+            runFit(hcal_unc, f"uncal_{run}", xmin=fitranges[0], xmax=fitranges[1],
+                   xfitmin=fitranges[2], xfitmax=fitranges[3], be=be, hasAtten=hasAtten)
 
         runs.append(run)
         energys.append(energy)
