@@ -59,14 +59,14 @@ def plotChMap(outdir="plots/ChMap"):
                "ChMap", dology=False, drawoptions="text", dologz=False, legendPos=(0.30, 0.87, 0.70, 0.97), lheader="Channel Map", outdir=outdir, zmin=0.0, zmax=15.0, textformat=".0f")
 
 
-def plotCh2D(t, suffix, plotAvg=True, applySel=True):
+def plotCh2D(t, run, plotAvg=True, applySel=True):
     # use RDF such that the loop is only needed once
     rdf = ROOT.RDataFrame(t)
 
-    energy = GetEnergy(suffix)
+    energy = GetEnergy(run)
 
     if applySel:
-        be, atte, _, _ = runinfo[suffix]
+        be, atte, _, _ = runinfo[run]
         _, _, fitmin, fitmax = GetFitRange(energy, atte)
         # fitmin and fitmax are basically the electron dominated region
         rdf = rdf.Define("ADCSum", "Sum(ch_lg)").Filter(
@@ -78,22 +78,22 @@ def plotCh2D(t, suffix, plotAvg=True, applySel=True):
     for ch in range(16):
         x, y = getChannelMap(ch)
         rdf = rdf.Define(f"x_{ch}", str(x)).Define(f"y_{ch}", str(
-            y)).Define(f"count_{suffix}_{ch}", f"ch_lg[{ch}]")
+            y)).Define(f"count_{run}_{ch}", f"ch_lg[{ch}]")
 
         histos[ch] = rdf.Histo2D(
-            (f"h_Chs_{suffix}_{ch}", "h", 4, -0.5, 3.5, 4, -0.5, 3.5), f"x_{ch}", f"y_{ch}", f"count_{suffix}_{ch}")
+            (f"h_Chs_{run}_{ch}", "h", 4, -0.5, 3.5, 4, -0.5, 3.5), f"x_{ch}", f"y_{ch}", f"count_{run}_{ch}")
 
-    h2D = ROOT.TH2F(f"h_Chs_{suffix}", "h", 4, -0.5, 3.5, 4, -0.5, 3.5)
+    h2D = ROOT.TH2F(f"h_Chs_{run}", "h", 4, -0.5, 3.5, 4, -0.5, 3.5)
     for ch in range(16):
         h2D.Add(histos[ch].GetValue())
 
     if plotAvg:
         h2D.Scale(1.0 / (nEvents+0.001))
 
-    leg = f"Run {suffix}, E = {GetEnergy(suffix)} GeV"
+    leg = f"Run {run}, E = {GetEnergy(run)} GeV"
 
     DrawHistos([h2D], [], -0.5, 3.5, "X", -0.5, 3.5, "Y",
-               f"Run{suffix}_ch_lg_2D", dology=False, drawoptions="colz,text", dologz=True, legendPos=(0.30, 0.87, 0.70, 0.97), lheader=leg, outdir="plots/Ch2D", zmin=1.0, zmax=2e3)
+               f"Run{run}_ch_lg_2D", dology=False, drawoptions="colz,text", dologz=True, legendPos=(0.30, 0.87, 0.70, 0.97), lheader=leg, outdir="plots/Ch2D", zmin=1.0, zmax=2e3)
 
 
 def plotCh1D(t, suffix, plotAvg=True, applySel=False, makePlots=True, xmin=0, xmax=1000, xbins=100):
