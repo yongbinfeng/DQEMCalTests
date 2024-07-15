@@ -3,9 +3,7 @@
 import ROOT
 import os
 import numpy as np
-from scipy.optimize import minimize
-from scipy.stats import norm
-from modules.fitFunction import fitFunction, saveResults, runFit, runMIPFit
+from modules.fitFunction import saveResults, runFit, runMIPFit
 from modules.runinfo import IsMuonRun, GetTitle
 from modules.utils import plotCh1D, plotChMap, getChannelMap, plotCh2D
 from modules.plotStyles import DrawHistos
@@ -72,6 +70,7 @@ DrawHistos([h2D_mean], [], -0.5, 3.5, "X", -0.5, 3.5, "Y", f"Run{run}_MIPCalib_S
 
 plotChMap("plots/MIPCalib")
 
+# save results
 if not os.path.exists("results"):
     os.makedirs("results")
 ofile = ROOT.TFile("results/MIPCalib.root", "RECREATE")
@@ -82,3 +81,9 @@ h2D_sigma.Write()
 hCalib.SetDirectory(ofile)
 hCalib.Write()
 ofile.Close()
+
+# save results similar to linear regression way
+results = []
+for ch in means.keys():
+    results.append(means[ch][0])
+saveResults(results, "results/MIPCalib.json")
