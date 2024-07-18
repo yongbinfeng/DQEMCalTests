@@ -7,14 +7,8 @@ from .plotStyles import DrawHistos
 import ROOT
 
 
-def plotChSum(t, run):
-    energy = GetEnergy(run)
-    _, atte, hasfilter, _ = runinfo[run]
-    _, xmax, _, _ = GetFitRange(energy, atte, hasfilter)
-
-    xmax = 8000
-
-    h = ROOT.TH1F(f"h_Run{run}ChSum", "h", 500, 0, xmax)
+def plotChSum(t, run, xmin=0, xmax=8000, outdir="plots/ChSum"):
+    h = ROOT.TH1F(f"h_Run{run}ChSum", "h", 500, xmin, xmax)
     t.Draw(f"Sum$(ch_lg)>>h_Run{run}ChSum")
 
     vmax = h.GetMaximum()
@@ -22,8 +16,8 @@ def plotChSum(t, run):
 
     title = GetTitle(run)
 
-    DrawHistos([h], [], 0, xmax, "Energy [ADC]", 0.1, vmax * 1e2,
-               "Counts", outname, dology=True, outdir="plots/ChSum", lheader=title, legendPos=(0.25, 0.85, 0.80, 0.90))
+    DrawHistos([h], [], xmin, xmax, "Energy [ADC]", 0.1, vmax * 1e2,
+               "Counts", outname, dology=True, outdir=outdir, lheader=title, legendPos=(0.25, 0.85, 0.80, 0.90))
 
 
 def getChannelMap(chan):
@@ -61,7 +55,7 @@ def plotChMap(outdir="plots/ChMap"):
                "ChMap", dology=False, drawoptions="text", dologz=False, legendPos=(0.30, 0.87, 0.70, 0.97), lheader="Channel Map", outdir=outdir, zmin=0.0, zmax=15.0, textformat=".0f")
 
 
-def plotCh2D(t, run, plotAvg=True, applySel=True, outdir="plots/Ch2D"):
+def plotCh2D(t, run, plotAvg=True, applySel=True, outdir="plots/Ch2D", xmin=None, xmax=None):
     # use RDF such that the loop is only needed once
     rdf = ROOT.RDataFrame(t)
 
@@ -70,6 +64,10 @@ def plotCh2D(t, run, plotAvg=True, applySel=True, outdir="plots/Ch2D"):
     if applySel:
         _, atte, hasfilter, _ = runinfo[run]
         _, _, fitmin, fitmax = GetFitRange(energy, atte, hasfilter)
+        if xmin is not None:
+            fitmin = xmin
+        if xmax is not None:
+            fitmax = xmax
         # fitmin and fitmax are basically the electron dominated region
         rdf = rdf.Define("ADCSum", "Sum(ch_lg)").Filter(
             f"ADCSum > {fitmin}").Filter(f'ADCSum < {fitmax}')

@@ -71,9 +71,9 @@ def RunMuonCalibration(start, end):
         hCalib.SetBinError(ch+1, means[ch][1])
 
     title = GetTitle(start, end)
-    DrawHistos([h2D_sigma], [], -0.5, 3.5, "X", -0.5, 3.5, "Y", f"MIPCalib_Mean_Run{start}_Run{end}", dology=False, drawoptions="colz,text,ERROR", dologz=False, legendPos=(
+    DrawHistos([h2D_sigma], [], -0.5, 3.5, "X", -0.5, 3.5, "Y", f"MIPCalib_Sigma_Run{start}_Run{end}", dology=False, drawoptions="colz,text,ERROR", dologz=False, legendPos=(
         0.15, 0.87, 0.70, 0.97), lheader=title, outdir="plots/MIPCalib", zmin=0.70, zmax=1.20)
-    DrawHistos([h2D_mean], [], -0.5, 3.5, "X", -0.5, 3.5, "Y", f"MIPCalib_Sigma_Run{start}_Run{end}", dology=False, drawoptions="colz,text,ERROR", dologz=False, legendPos=(
+    DrawHistos([h2D_mean], [], -0.5, 3.5, "X", -0.5, 3.5, "Y", f"MIPCalib_Mean_Run{start}_Run{end}", dology=False, drawoptions="colz,text,ERROR", dologz=False, legendPos=(
         0.15, 0.87, 0.70, 0.97), lheader=title, outdir="plots/MIPCalib", zmin=0.70, zmax=1.20)
 
     plotChMap("plots/MIPCalib")

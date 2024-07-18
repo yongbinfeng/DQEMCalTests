@@ -1,7 +1,8 @@
 import sys
+import copy
 
 
-def GetFitRange(energy, hasAtten, hasFilter):
+def GetFitRange(energy, hasAtten, hasFilter, isLinearRegression=False):
     fitmin = 2850.0
     fitmax = 3600.0
     fitranges = {
@@ -37,11 +38,52 @@ def GetFitRange(energy, hasAtten, hasFilter):
         (120, 1, 0): (20000.0, 50000.0, 30000.0, 40000.0),
         (120, 0, 1): (20000.0, 50000.0, 30000.0, 40000.0),
     }
+    fit_ranges_linear = copy.deepcopy(fitranges)
+    fit_ranges_linear[(4, 1, 0)] = (0.0, 1000.0, 400.0, 670.0)
+    fit_ranges_linear[(8, 1, 0)] = (0.0, 1500.0, 800.0, 1200.0)
+    fit_ranges_linear[(3, 1, 0)] = (0.0, 800.0, 300.0, 480.0)
+
     try:
+        if isLinearRegression:
+            return fit_ranges_linear[(energy, hasAtten, hasFilter)]
         return fitranges[(energy, hasAtten, hasFilter)]
     except KeyError:
         print(
             f"Energy {energy}, hasAttenuation {hasAtten}, and hasFilter {hasFilter} not found in fitranges")
+        return None
+
+
+def GetSelectionRange(energy, hasAtten, hasFilter):
+    """
+    return the sum(ch_lg) range of the Gaussian part, which corresponds to the electron energy deposit,
+    in the events. Then used for (non)linear regression
+    """
+    selections = {
+        (8, 1, 0): (900.0, 1200.0)
+    }
+    try:
+        return selections[(energy, hasAtten, hasFilter)]
+    except KeyError:
+        print(
+            f"Energy {energy}, hasAttenuation {hasAtten}, and hasFilter {hasFilter} not found in selections")
+        return None
+
+
+def GetRegressionGoal(run):
+    """
+    return the target energy for the linear regression
+    """
+    goals = {
+        (8, 1, 0): 1000.0
+    }
+    energy = GetEnergy(run)
+    hasAtten = HasAttenuator(run)
+    hasFilter = HasFilter(run)
+    try:
+        return goals[(energy, hasAtten, hasFilter)]
+    except KeyError:
+        print(
+            f"Energy {energy}, hasAttenuation {hasAtten}, and hasFilter {hasFilter} not found in goals")
         return None
 
 

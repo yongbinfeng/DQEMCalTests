@@ -130,8 +130,10 @@ if __name__ == "__main__":
 
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f", "--file_mipcalib", type=str,
-                        default="results/MIPCalib.json", help="MIP calibration file")
+    parser.add_argument("-m", "--file_mipcalib", type=str,
+                        default="", help="MIP calibration file")
+    parser.add_argument("-l", "--file_linear", type=str,
+                        default="", help="Linear regression file")
     parser.add_argument("-s", "--start", type=int,
                         default=369, help="Run number to start")
     parser.add_argument("-e", "--end", type=int,
@@ -141,14 +143,22 @@ if __name__ == "__main__":
     run_start, run_end = args.start, args.end
     print(f"Selecting runs from {run_start} to {run_end}")
 
-    fname = args.file_mipcalib
-    print(f"Using MIP calibration file: {fname}")
-    mipcalibs = loadResults(fname)
-    # linear regression has a bias term but not used.
-    # add a dummy value for the bias term, only place holder, not used
-    mipcalibs.append(1.0)
-    mipcalibs = np.array(mipcalibs)
+    mipcalibs = None
+    if args.file_mipcalib != "":
+        fname = args.file_mipcalib
+        print(f"Using MIP calibration file: {fname}")
+        mipcalibs = loadResults(fname)
+        # linear regression has a bias term but not used.
+        # add a dummy value for the bias term, only place holder, not used
+        mipcalibs.append(1.0)
+        mipcalibs = np.array(mipcalibs)
 
-    for i in range(run_start, run_end):
-        # Evaluate(i, model, scales)
-        Evaluate(i, None, None, mipcalibs)
+    linearcalibs = None
+    if args.file_linear != "":
+        fname = args.file_linear
+        print(f"Using Linear regression file: {fname}")
+        linearcalibs = loadResults(fname)
+        linearcalibs = np.array(linearcalibs)
+
+    for i in range(run_start, run_end+1):
+        Evaluate(i, None, linearcalibs, mipcalibs)
