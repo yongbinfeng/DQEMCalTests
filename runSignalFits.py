@@ -11,7 +11,7 @@ if __name__ == "__main__":
     from modules.utils import parseRuns
     run_start, run_end = parseRuns()
 
-    from modules.runinfo import runinfo, GetFitRange
+    from modules.runinfo import runinfo, GetFitRange, IsMuonRun
     from modules.fitFunction import runFit, runMIPFit
 
     runs = []
@@ -21,8 +21,8 @@ if __name__ == "__main__":
     sigmas = []
     sigmaEs = []
 
-    for run in range(run_start, run_end):
-        fname = f"regressed/Run{run}_list.root"
+    for run in range(run_start, run_end+1):
+        fname = f"calibrated/Run{run}_list.root"
 
         if not os.path.exists(fname):
             print(f"File {fname} does not exist")
@@ -30,6 +30,10 @@ if __name__ == "__main__":
 
         if run not in runinfo:
             print(f"Run {run} not in run info")
+            continue
+
+        if IsMuonRun(run):
+            print(f"Run {run} is a muon run")
             continue
 
         be, hasAtten, hasFilter, _ = runinfo[run]
@@ -54,8 +58,14 @@ if __name__ == "__main__":
         elif energy >= 20.0:
             hcal.Rebin(5)
 
+        if not hasAtten and not hasFilter:
+            hcal.Rebin(2)
+
         (mu, muE), (sigma, sigmaE) = runFit(hcal, f"cal_{run}", xmin=fitranges[0], xmax=fitranges[1],
-                                            xfitmin=fitranges[2], xfitmax=fitranges[3])
+                                            xfitmin=fitranges[2], xfitmax=fitranges[3], outdir="plots/MIPCalibed/Fits/")
+
+        # (mu, muE), (sigma, sigmaE) = runMIPFit(hcal, f"cal_{run}", xmin=fitranges[0], xmax=fitranges[1],
+        #                                       xfitmin=fitranges[2], xfitmax=fitranges[3], outdir="plots/MIPCalibed/MIPFits/")
 
         if hcal_linear:
             if energy == 8.0:
@@ -93,7 +103,11 @@ if __name__ == "__main__":
         "sigmaEs": sigmaEs
     }
 
-    with open("fitresults.json", "w") as f:
+    if not os.path.exists("results"):
+        print("Creating results directory")
+        os.makedirs("results")
+
+    with open(f"results/fitresults_Run{run_start}_{run_end}.json", "w") as f:
         json.dump(fitresults, f)
 
     print("energys = ", energys)

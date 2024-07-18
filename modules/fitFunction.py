@@ -22,6 +22,7 @@ def loadResults(outname="results.json"):
 
 
 def runFit(h, suffix, mean=3100.0, xmin=0.0, xmax=7500.0, xfitmin=2950.0, xfitmax=3400.0, be=1.0, hasAtten=False, outdir="plots/fits"):
+    h.GetXaxis().SetRangeUser(xmin, xmax)
     xmean = h.GetMean()
     xrms = h.GetRMS()
     xbins = h.GetNbinsX()
@@ -150,6 +151,7 @@ def runFit(h, suffix, mean=3100.0, xmin=0.0, xmax=7500.0, xfitmin=2950.0, xfitma
 
 
 def runMIPFit(h, suffix, xmin=0.0, xmax=7500.0, xfitmin=2950.0, xfitmax=3400.0, outdir="plots/MIPFits"):
+    h.GetXaxis().SetRangeUser(xmin, xmax)
     xmean = h.GetMean()
     xrms = h.GetRMS()
     xbins = h.GetNbinsX()
@@ -256,10 +258,15 @@ def runMIPFit(h, suffix, xmin=0.0, xmax=7500.0, xfitmin=2950.0, xfitmax=3400.0, 
         return int(run)
 
     run_start = getRunNumber(suffix)
-    run_end = getRunNumber(suffix, isEnd=True)
     runstr = f"Run {run_start}"
-    if run_end != run_start:
-        runstr += f" - {run_end}"
+
+    chName = None
+    if suffix.count("_") >= 2:
+        run_end = getRunNumber(suffix, isEnd=True)
+        if run_end != run_start:
+            runstr += f" - {run_end}"
+    if suffix.count("_") >= 3:
+        chName = suffix.split("_")[-1]
     yval = 0.80
     xval = 0.70
     latex.DrawLatexNDC(xval, yval, runstr)
@@ -275,9 +282,9 @@ def runMIPFit(h, suffix, xmin=0.0, xmax=7500.0, xfitmin=2950.0, xfitmax=3400.0, 
     if IsMuonRun(run_start):
         latex.DrawLatexNDC(xval, yval, "muon run")
         yval -= 0.05
-    chName = suffix.split("_")[-1]
-    latex.DrawLatexNDC(xval, yval, f"Channel {chName}")
-    yval -= 0.05
+    if chName:
+        latex.DrawLatexNDC(xval, yval, f"Channel {chName}")
+        yval -= 0.05
     frame.addObject(latex)
 
     # make pull histograms

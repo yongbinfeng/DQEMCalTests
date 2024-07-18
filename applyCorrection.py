@@ -74,9 +74,9 @@ def Evaluate(run, model=None, scales=None, mipcalibs=None, verbose=False):
             x, y = getChannelMap(j)
             chans[i][x][y][0] = t.ch_lg[j]
 
-    if not os.path.exists("regressed"):
-        os.makedirs("regressed")
-    ofile = ROOT.TFile(f"regressed/Run{run}_list.root", "RECREATE")
+    if not os.path.exists("calibrated"):
+        os.makedirs("calibrated")
+    ofile = ROOT.TFile(f"calibrated/Run{run}_list.root", "RECREATE")
 
     if model:
         print("Applying CNN Regression")
@@ -128,14 +128,27 @@ if __name__ == "__main__":
     # scales = loadResults("results/results_withattu.json")
     # scales = np.array(scales)
 
-    mipcalibs = loadResults("results/MIPCalib.json")
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-f", "--file_mipcalib", type=str,
+                        default="results/MIPCalib.json", help="MIP calibration file")
+    parser.add_argument("-s", "--start", type=int,
+                        default=369, help="Run number to start")
+    parser.add_argument("-e", "--end", type=int,
+                        default=695, help="Run number to end")
+    args, unknown = parser.parse_known_args()
+
+    run_start, run_end = args.start, args.end
+    print(f"Selecting runs from {run_start} to {run_end}")
+
+    fname = args.file_mipcalib
+    print(f"Using MIP calibration file: {fname}")
+    mipcalibs = loadResults(fname)
     # linear regression has a bias term but not used.
     # add a dummy value for the bias term, only place holder, not used
     mipcalibs.append(1.0)
     mipcalibs = np.array(mipcalibs)
 
-    from modules.utils import parseRuns
-    run_start, run_end = parseRuns()
     for i in range(run_start, run_end):
         # Evaluate(i, model, scales)
         Evaluate(i, None, None, mipcalibs)
