@@ -33,7 +33,7 @@ def AddOverflows(hinput, dolastbin=True):
     if isinstance(hinput, ROOT.TH1):
         AddOverflowsTH1(hinput, dolastbin)
 
-    if isinstance(hinput, ROOT.THStack):
+    elif isinstance(hinput, ROOT.THStack):
         # do the AddOverflowsTH1 for all the histograms in THStack
         hlist = list(hinput.GetHists())
         list(map(AddOverflowsTH1, hlist, [dolastbin]*len(hlist)))

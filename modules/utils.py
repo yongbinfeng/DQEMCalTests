@@ -9,8 +9,8 @@ import ROOT
 
 def plotChSum(t, suffix):
     energy = GetEnergy(suffix)
-    be, atte, _, _ = runinfo[suffix]
-    _, xmax, _, _ = GetFitRange(energy, atte)
+    _, atte, hasfilter, _ = runinfo[suffix]
+    _, xmax, _, _ = GetFitRange(energy, atte, hasfilter)
 
     xmax = 5000
 
@@ -66,8 +66,8 @@ def plotCh2D(t, run, plotAvg=True, applySel=True):
     energy = GetEnergy(run)
 
     if applySel:
-        be, atte, _, _ = runinfo[run]
-        _, _, fitmin, fitmax = GetFitRange(energy, atte)
+        _, atte, hasfilter, _ = runinfo[run]
+        _, _, fitmin, fitmax = GetFitRange(energy, atte, hasfilter)
         # fitmin and fitmax are basically the electron dominated region
         rdf = rdf.Define("ADCSum", "Sum(ch_lg)").Filter(
             f"ADCSum > {fitmin}").Filter(f'ADCSum < {fitmax}')
