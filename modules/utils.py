@@ -7,40 +7,42 @@ from .plotStyles import DrawHistos
 import ROOT
 
 
-def plotChSum(t, suffix):
-    energy = GetEnergy(suffix)
-    _, atte, hasfilter, _ = runinfo[suffix]
+def plotChSum(t, run):
+    energy = GetEnergy(run)
+    _, atte, hasfilter, _ = runinfo[run]
     _, xmax, _, _ = GetFitRange(energy, atte, hasfilter)
 
-    xmax = 5000
+    xmax = 8000
 
-    h = ROOT.TH1F(f"h_{suffix}", "h", 500, 0, xmax)
-    t.Draw(f"Sum$(ch_lg)>>h_{suffix}")
+    h = ROOT.TH1F(f"h_Run{run}ChSum", "h", 500, 0, xmax)
+    t.Draw(f"Sum$(ch_lg)>>h_Run{run}ChSum")
 
     vmax = h.GetMaximum()
-    outname = f"Run{suffix}_sum_ch_lg"
+    outname = f"Run{run}_sum_ch_lg"
 
-    DrawHistos([h], ["Run "+str(suffix)], 0, xmax, "Energy [ADC]", 0.1, vmax * 1e2,
-               "Counts", outname, dology=True, outdir="plots/ChSum")
+    title = GetTitle(run)
+
+    DrawHistos([h], [], 0, xmax, "Energy [ADC]", 0.1, vmax * 1e2,
+               "Counts", outname, dology=True, outdir="plots/ChSum", lheader=title, legendPos=(0.25, 0.85, 0.80, 0.90))
 
 
 def getChannelMap(chan):
     chanMap = {
         15: (0, 0),
-        14: (0, 1),
-        13: (1, 0),
+        14: (1, 0),
+        13: (0, 1),
         12: (1, 1),
-        11: (0, 2),
-        10: (0, 3),
-        9: (1, 2),
-        8: (1, 3),
-        7: (2, 0),
-        6: (2, 1),
-        5: (3, 0),
-        4: (3, 1),
+        11: (2, 0),
+        10: (3, 0),
+        9: (2, 1),
+        8: (3, 1),
+        7: (0, 2),
+        6: (1, 2),
+        5: (0, 3),
+        4: (1, 3),
         3: (2, 2),
-        2: (2, 3),
-        1: (3, 2),
+        2: (3, 2),
+        1: (2, 3),
         0: (3, 3)
     }
     return chanMap[chan]
@@ -56,7 +58,7 @@ def plotChMap(outdir="plots/ChMap"):
         h2D.Fill(x, y, ch)
 
     DrawHistos([h2D], [], -0.5, 3.5, "X", -0.5, 3.5, "Y",
-               "ChMap", dology=False, drawoptions="text", dologz=False, legendPos=(0.30, 0.87, 0.70, 0.97), lheader="Channel Map", outdir=outdir, zmin=0.0, zmax=15.0, textformat=".0f")
+               "ChMap", dology=False, drawoptions="text", dologz=False, legendPos=(0.30, 0.75, 0.70, 0.83), lheader="Channel Map", outdir=outdir, zmin=0.0, zmax=15.0, textformat=".0f")
 
 
 def plotCh2D(t, run, plotAvg=True, applySel=True):
@@ -90,20 +92,20 @@ def plotCh2D(t, run, plotAvg=True, applySel=True):
     if plotAvg:
         h2D.Scale(1.0 / (nEvents+0.001))
 
-    leg = f"Run {run}, E = {GetEnergy(run)} GeV"
+    title = GetTitle(run)
 
     DrawHistos([h2D], [], -0.5, 3.5, "X", -0.5, 3.5, "Y",
-               f"Run{run}_ch_lg_2D", dology=False, drawoptions="colz,text", dologz=True, legendPos=(0.30, 0.87, 0.70, 0.97), lheader=leg, outdir="plots/Ch2D", zmin=1.0, zmax=2e3)
+               f"Run{run}_ch_lg_2D", dology=False, drawoptions="colz,text", dologz=True, legendPos=(0.15, 0.87, 0.80, 0.97), lheader=title, outdir="plots/Ch2D", zmin=1.0, zmax=2e3)
 
 
-def plotCh1D(t, suffix, plotAvg=True, applySel=False, makePlots=True, xmin=0, xmax=1000, xbins=100):
+def plotCh1D(t, run, plotAvg=True, applySel=False, makePlots=True, xmin=0, xmax=1000, xbins=100):
     rdf = ROOT.RDataFrame(t)
 
-    energy = GetEnergy(suffix)
+    energy = GetEnergy(run)
 
     if applySel:
-        be, atte = runinfo[suffix]
-        _, _, fitmin, fitmax = GetFitRange(energy, atte)
+        _, atte, hasfilter, _ = runinfo[run]
+        _, _, fitmin, fitmax = GetFitRange(energy, atte, hasfilter)
         rdf = rdf.Define("ADCSum", "Sum(ch_lg)").Filter(
             f"ADCSum > {fitmin}").Filter(f'ADCSum < {fitmax}')
 
@@ -115,9 +117,9 @@ def plotCh1D(t, suffix, plotAvg=True, applySel=False, makePlots=True, xmin=0, xm
         rdf = rdf.Define(f"ch_hg_{ch}", f"ch_hg[{ch}]").Define(
             f"ch_lg_{ch}", f"ch_lg[{ch}]")
         histos_hg[ch] = rdf.Histo1D(
-            (f"h_Chs_hg_{suffix}_{ch}", "h", xbins, xmin, xmax), f"ch_hg_{ch}")
+            (f"h_Chs_hg_{run}_{ch}", "h", xbins, xmin, xmax), f"ch_hg_{ch}")
         histos_lg[ch] = rdf.Histo1D(
-            (f"h_Chs_lg_{suffix}_{ch}", "h", xbins, xmin, xmax), f"ch_lg_{ch}")
+            (f"h_Chs_lg_{run}_{ch}", "h", xbins, xmin, xmax), f"ch_lg_{ch}")
 
     if plotAvg:
         for ch in range(16):
@@ -126,7 +128,7 @@ def plotCh1D(t, suffix, plotAvg=True, applySel=False, makePlots=True, xmin=0, xm
 
     if makePlots:
         # make the actual plots
-        title = GetTitle(suffix)
+        title = GetTitle(run)
 
         ltitle = ROOT.TLatex(0.20, 0.95, title)
         ltitle.SetNDC()
@@ -136,9 +138,9 @@ def plotCh1D(t, suffix, plotAvg=True, applySel=False, makePlots=True, xmin=0, xm
         mycolors = [15 + i*5 for i in range(16)]
 
         DrawHistos([histos_hg[ch].GetValue() for ch in range(16)], [f"Ch {ch}" for ch in range(16)], xmin, xmax, "High Gain ADC", 1e-6, 1e3, "Counts",
-                   f"Run{suffix}_ch_hg_1D", dology=True, outdir="plots/Ch1D/hg", legendPos=(0.35, 0.70, 0.90, 0.90), mycolors=mycolors, extraToDraws=[ltitle], legendNCols=4, addOverflow=True)
+                   f"Run{run}_ch_hg_1D", dology=True, outdir="plots/Ch1D/hg", legendPos=(0.35, 0.70, 0.90, 0.90), mycolors=mycolors, extraToDraws=[ltitle], legendNCols=4, addOverflow=True)
         DrawHistos([histos_lg[ch].GetValue() for ch in range(16)], [f"Ch {ch}" for ch in range(16)], xmin, xmax, "Low Gain ADC", 1e-6, 1e3, "Counts",
-                   f"Run{suffix}_ch_lg_1D", dology=True, outdir="plots/Ch1D/lg", legendPos=(0.35, 0.70, 0.90, 0.90), mycolors=mycolors, extraToDraws=[ltitle], legendNCols=4, addOverflow=True)
+                   f"Run{run}_ch_lg_1D", dology=True, outdir="plots/Ch1D/lg", legendPos=(0.35, 0.70, 0.90, 0.90), mycolors=mycolors, extraToDraws=[ltitle], legendNCols=4, addOverflow=True)
 
     for ch in range(16):
         histos_hg[ch] = histos_hg[ch].GetValue()
@@ -160,17 +162,18 @@ def plotWeight(run):
         return
     f = ROOT.TFile(fname)
     h2D = f.Get("hweights")
+    title = GetTitle(run)
     DrawHistos([h2D], [], -0.5, 3.5, "X", -0.5, 3.5, "Y", f"Run{run}_weights", dology=False, drawoptions="colz,text,ERROR", dologz=False, legendPos=(
-        0.30, 0.87, 0.70, 0.97), lheader=f"Run {run}, E = {GetEnergy(run)} GeV", outdir="plots/Weights", zmin=0.70, zmax=1.10)
+        0.25, 0.87, 0.70, 0.97), lheader=title, outdir="plots/Weights", zmin=0.70, zmax=1.10)
 
 
 def parseRuns():
     import argparse
     parser = argparse.ArgumentParser(description="Make ROOT files")
     parser.add_argument("-s", "--start", type=int,
-                        default=329, help="Run number to start")
+                        default=369, help="Run number to start")
     parser.add_argument("-e", "--end", type=int,
-                        default=528, help="Run number to end")
+                        default=695, help="Run number to end")
     args, unknown = parser.parse_known_args()
     run_start, run_end = args.start, args.end + 1
     print(f"Selecting runs from {run_start} to {run_end-1}")
