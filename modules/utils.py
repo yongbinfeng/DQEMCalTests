@@ -58,10 +58,10 @@ def plotChMap(outdir="plots/ChMap"):
         h2D.Fill(x, y, ch)
 
     DrawHistos([h2D], [], -0.5, 3.5, "X", -0.5, 3.5, "Y",
-               "ChMap", dology=False, drawoptions="text", dologz=False, legendPos=(0.30, 0.75, 0.70, 0.83), lheader="Channel Map", outdir=outdir, zmin=0.0, zmax=15.0, textformat=".0f")
+               "ChMap", dology=False, drawoptions="text", dologz=False, legendPos=(0.30, 0.87, 0.70, 0.97), lheader="Channel Map", outdir=outdir, zmin=0.0, zmax=15.0, textformat=".0f")
 
 
-def plotCh2D(t, run, plotAvg=True, applySel=True):
+def plotCh2D(t, run, plotAvg=True, applySel=True, outdir="plots/Ch2D"):
     # use RDF such that the loop is only needed once
     rdf = ROOT.RDataFrame(t)
 
@@ -95,7 +95,7 @@ def plotCh2D(t, run, plotAvg=True, applySel=True):
     title = GetTitle(run)
 
     DrawHistos([h2D], [], -0.5, 3.5, "X", -0.5, 3.5, "Y",
-               f"Run{run}_ch_lg_2D", dology=False, drawoptions="colz,text", dologz=True, legendPos=(0.15, 0.87, 0.80, 0.97), lheader=title, outdir="plots/Ch2D", zmin=1.0, zmax=2e3)
+               f"Run{run}_ch_lg_2D", dology=False, drawoptions="colz,text", dologz=True, legendPos=(0.15, 0.87, 0.80, 0.97), lheader=title, outdir=outdir, zmin=1.0, zmax=2e3)
 
 
 def plotCh1D(t, run, plotAvg=True, applySel=False, makePlots=True, xmin=0, xmax=1000, xbins=100):
@@ -175,6 +175,6 @@ def parseRuns():
     parser.add_argument("-e", "--end", type=int,
                         default=695, help="Run number to end")
     args, unknown = parser.parse_known_args()
-    run_start, run_end = args.start, args.end + 1
-    print(f"Selecting runs from {run_start} to {run_end-1}")
+    run_start, run_end = args.start, args.end
+    print(f"Selecting runs from {run_start} to {run_end}")
     return run_start, run_end

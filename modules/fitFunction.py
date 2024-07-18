@@ -248,22 +248,36 @@ def runMIPFit(h, suffix, xmin=0.0, xmax=7500.0, xfitmin=2950.0, xfitmax=3400.0, 
                        (vsigmaL.getVal()/vmean.getVal()*100.))
 
     # extra information
-    run = int(suffix.split("_")[1])
+    def getRunNumber(suffix, isEnd=False):
+        idx = 1 if not isEnd else 2
+        run = suffix.split("_")[idx]
+        if run.startswith("Run"):
+            run = run[3:]
+        return int(run)
+
+    run_start = getRunNumber(suffix)
+    run_end = getRunNumber(suffix, isEnd=True)
+    runstr = f"Run {run_start}"
+    if run_end != run_start:
+        runstr += f" - {run_end}"
     yval = 0.80
     xval = 0.70
-    latex.DrawLatexNDC(xval, yval, f"Run {run}")
+    latex.DrawLatexNDC(xval, yval, runstr)
     yval -= 0.05
-    latex.DrawLatexNDC(xval, yval, f"E = {GetEnergy(run)} GeV")
+    latex.DrawLatexNDC(xval, yval, f"E = {GetEnergy(run_start)} GeV")
     yval -= 0.05
-    if HasAttenuator(run):
+    if HasAttenuator(run_start):
         latex.DrawLatexNDC(xval, yval, "with attenuator")
         yval -= 0.05
-    if HasFilter(run):
+    if HasFilter(run_start):
         latex.DrawLatexNDC(xval, yval, "with filter")
         yval -= 0.05
-    if IsMuonRun(run):
+    if IsMuonRun(run_start):
         latex.DrawLatexNDC(xval, yval, "muon run")
         yval -= 0.05
+    chName = suffix.split("_")[-1]
+    latex.DrawLatexNDC(xval, yval, f"Channel {chName}")
+    yval -= 0.05
     frame.addObject(latex)
 
     # make pull histograms

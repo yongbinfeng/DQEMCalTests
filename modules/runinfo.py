@@ -45,6 +45,15 @@ def GetFitRange(energy, hasAtten, hasFilter):
         return None
 
 
+def GetMIPFitRange(run):
+    a = (100, 1100, 200, 1050)
+    b = (500, 2000, 650, 1700)
+    if run != 655:
+        return a
+    # run 655 does not have any attenuator or filter
+    return b
+
+
 runinfo = {
     # run: (energy x 8 GeV), with attenuation ? with neutral density filter ? is muon run?)
     # without attenuation, without filter
@@ -278,7 +287,7 @@ def IsMuonRun(run):
     return info[3]
 
 
-def GetTitle(run):
+def GetTitle(run, run_end=None):
     if not CheckRunExists(run):
         return None
     energy = GetEnergy(run)
@@ -286,7 +295,10 @@ def GetTitle(run):
     hasFilter = HasFilter(run)
     isMuon = IsMuonRun(run)
 
-    title = f"Run {run}, {energy} GeV"
+    title = f"Run {run}"
+    if run_end is not None:
+        title += f" to {run_end}"
+    title += f", {energy} GeV"
     if hasAtten:
         title += ", with attenuator"
     if hasFilter:
