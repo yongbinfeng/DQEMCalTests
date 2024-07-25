@@ -1,5 +1,31 @@
 # DQEMCalTests
 
+## Installation on MIT's `sqtestbench`
+
+First install miniconda and create an environment in which to install the latest version of ROOT and python3. Installation instructions can be found [here](https://docs.anaconda.com/miniconda/#quick-command-line-install) but are given below:
+```
+mkdir -p ~/miniconda3
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh
+bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
+rm -rf ~/miniconda3/miniconda.sh
+```
+After installing, initialize the newly-installed Miniconda for either bash or zsh shell:
+```
+~/miniconda3/bin/conda init bash
+~/miniconda3/bin/conda init zsh
+```
+
+Now install [ROOT](https://root.cern/install/#conda) inside the miniconda environment:
+```
+conda config --set channel_priority strict
+conda create -c conda-forge --name <my-environment> root
+conda activate <my-environment>
+```
+
+You are now ready to run the DarkQuest EMCal test scripts below. 
+
+## Running analyses
+
 Steps:
 - make ROOT [makeROOT.py](makeROOT.py)
 - make selections for electrons for regression [makeSelections.py](makeSelections.py)
