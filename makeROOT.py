@@ -1,11 +1,11 @@
 from multiprocessing import Pool, current_process
 from array import array
-from ROOT import *
+import ROOT
 import sys
 import os
 sys.argv.append('-b')
 
-gROOT.SetBatch(True)
+ROOT.gROOT.SetBatch(True)
 
 chlist = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
 chlist_str = ["00", "01", "02", "03", "04", "05", "06",
@@ -20,9 +20,15 @@ def convertStrToVal(ch):
 
 
 def makeROOT(run):
+    # check if we are on sqtestbench.mit.edu
+    if os.getenv('HOSTNAME') == 'sqtestbench':
+        data_dir = '/storage/spinquest/emcal'
+    else:
+        # assume the user has made a local data directory 
+        data_dir = 'data'
     # check if file exists
-    if not os.path.exists(f"data/Run{run}_list.txt"):
-        print(f"File data/Run{run}_list.txt does not exist")
+    if not os.path.exists(f"{data_dir}/Run{run}_list.txt"):
+        print(f"File {data_dir}/Run{run}_list.txt does not exist")
         return
 
     pid = current_process().pid
@@ -30,11 +36,11 @@ def makeROOT(run):
     print(f"Making ROOT file for Run {run} with Process ID: {pid}")
     trigID = array('i', [0])
     trigTime = array('d', [0])
-    ch_lg = std.vector[int]()
-    ch_hg = std.vector[int]()
+    ch_lg = ROOT.std.vector[int]()
+    ch_hg = ROOT.std.vector[int]()
 
-    fout = TFile(f"root/Run{run}_list.root", "RECREATE")
-    tout = TTree("save", "save")
+    fout = ROOT.TFile(f"root/Run{run}_list.root", "RECREATE")
+    tout = ROOT.TTree("save", "save")
     tout.SetDirectory(fout)
 
     tout.Branch('trigID', trigID, 'trigID/I')
@@ -51,7 +57,7 @@ def makeROOT(run):
 
     nevents = 0
 
-    with open(f"data/Run{run}_list.txt") as infile:
+    with open(f"{data_dir}/Run{run}_list.txt") as infile:
         for line in infile:
             if ("//" in line):
                 continue
@@ -92,6 +98,11 @@ def worker(run):
 if __name__ == "__main__":
     from modules.utils import parseRuns
     run_start, run_end = parseRuns()
+
+    # see if output directory exists
+    if not os.path.exists('./root/'):
+        print('Output rootfile directory "root/" does not exist, please create first;\n\tmkdir ./root')
+        exit()
 
     with Pool(16) as p:
         p.map(worker, range(run_start, run_end))
