@@ -5,6 +5,21 @@ import numpy as np
 import os
 
 
+fBNLResol = ROOT.TF1(
+    "fBNLResol", "sqrt(0.021*0.021 + 0.081*0.081/x)", 1.0, 32, 0)
+fBNLResol.SetLineColor(4)
+fBNLResol.SetMarkerColor(4)
+fBNLResol.SetLineWidth(4)
+fBNLResol.SetLineStyle(3)
+
+fSTARResol = ROOT.TF1(
+    "fSTARResol", "sqrt(0.0112*0.00112 + 0.115*0.115/x)", 1.0, 32, 0)
+fSTARResol.SetLineColor(8)
+fSTARResol.SetMarkerColor(8)
+fSTARResol.SetLineWidth(4)
+fSTARResol.SetLineStyle(3)
+
+
 def AddOneGraph(fname, color, marker, label, offset=0):
     if not os.path.exists(fname):
         print(f"File {fname} does not exist")
@@ -72,13 +87,6 @@ def AddOneGraph(fname, color, marker, label, offset=0):
             extraToDraws.append(l)
         return extraToDraws
 
-    fBNLResol = ROOT.TF1(
-        "fBNLResol", "sqrt(0.021*0.021 + 0.081*0.081/x)", 1.0, 32, 0)
-    fBNLResol.SetLineColor(4)
-    fBNLResol.SetMarkerColor(4)
-    fBNLResol.SetLineWidth(4)
-    fBNLResol.SetLineStyle(3)
-
     suffix = label.replace(" ", "_")
 
     extraToDraws_mean = AddRunInfo(gMean)
@@ -86,8 +94,8 @@ def AddOneGraph(fname, color, marker, label, offset=0):
                6e3, "Mean [ADCCount]", "fit_mean_"+suffix, dology=False, drawoptions=["P"], legendoptions=["P"], legendPos=[0.45, 0.80, 0.8, 0.85], nMaxDigits=3, extraToDraws=extraToDraws_mean)
 
     extraToDraws_sigma = AddRunInfo(gSigma)
-    DrawHistos([gSigma.Clone(), fBNLResol], [label, "BNL Testbeam Results"], 0, 35, "Energy [GeV]",
-               0, 0.18, "#sigma/#mu", "fit_sigma_"+suffix, dology=False, drawoptions=["P", "L"], legendoptions=["P", "L"], legendPos=[0.45, 0.75, 0.8, 0.85],  extraToDraws=extraToDraws_sigma)
+    DrawHistos([gSigma.Clone(), fBNLResol, fSTARResol], [label, "BNL Testbeam Results", "STAR Results"], 0, 35, "Energy [GeV]",
+               0, 0.18, "#sigma/#mu", "fit_sigma_"+suffix, dology=False, drawoptions=["P", "L", "L"], legendoptions=["P", "L", "L"], legendPos=[0.45, 0.70, 0.8, 0.85],  extraToDraws=extraToDraws_sigma)
 
     return gMean, gSigma
 
@@ -120,21 +128,8 @@ nGraphs = len(to_draws_means)
 # fResol.SetLineWidth(4)
 # fResol.SetLineStyle(3)
 
-# def BNLResol(x, par):
-#    a = 0.021
-#    b = 0.081
-#    return np.sqrt(a*a + b*b / x[0])
-#
-#
-fBNLResol = ROOT.TF1(
-    "fBNLResol", "sqrt(0.021*0.021 + 0.081*0.081/x)", 1.0, 32, 0)
-fBNLResol.SetLineColor(4)
-fBNLResol.SetMarkerColor(4)
-fBNLResol.SetLineWidth(4)
-fBNLResol.SetLineStyle(3)
-
 DrawHistos(to_draws_means, legends, 0, 35, "Energy [GeV]", 0,
            6e3, "Mean [ADCCount]", "fit_mean", dology=False, drawoptions=["P"]*nGraphs, legendoptions=["P"]*nGraphs, legendPos=[0.45, 0.68, 0.8, 0.85], nMaxDigits=3)
 
-DrawHistos(to_draws_sigmas+[fBNLResol], legends + ["BNL Testbeam Results"], 0, 35, "Energy [GeV]",
-           0, 0.18, "#sigma/#mu", "fit_sigma", dology=False, drawoptions=["P"]*nGraphs+["L"], legendoptions=["P"]*nGraphs+["L"], legendPos=[0.45, 0.68, 0.8, 0.85])
+DrawHistos(to_draws_sigmas+[fBNLResol, fSTARResol], legends + ["BNL Testbeam Results", "STAR Results"], 0, 35, "Energy [GeV]",
+           0, 0.18, "#sigma/#mu", "fit_sigma", dology=False, drawoptions=["P"]*nGraphs+["L", "L"], legendoptions=["P"]*nGraphs+["L", "L"], legendPos=[0.45, 0.68, 0.8, 0.85])
