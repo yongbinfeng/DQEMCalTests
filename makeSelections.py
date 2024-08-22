@@ -17,16 +17,28 @@ def select(run):
         return
 
     be, hasAtten, hasFilter, _ = GetRunInfo(run)
-    xmin, xmax = GetSelectionRange(be*8, hasAtten, hasFilter)
+    xranges = GetSelectionRange(be*8, hasAtten, hasFilter)
+    if xranges is None:
+        print(f"Run {run} does not have a selection range")
+        return
+    xmin, xmax = xranges[0], xranges[1]
 
     f = ROOT.TFile(fname)
     t = f.Get("save")
     nentries = t.GetEntries()
 
     # make plots of sum of ch_lg
+    lmin = ROOT.TLine(xmin, 0, xmin, 1e3)
+    lmin.SetLineColor(ROOT.kGreen)
+    lmin.SetLineStyle(2)
+    lmin.SetLineWidth(2)
+    lmax = ROOT.TLine(xmax, 0, xmax, 1e3)
+    lmax.SetLineColor(ROOT.kGreen)
+    lmax.SetLineWidth(2)
+    lmax.SetLineStyle(2)
     from modules.utils import plotChSum, plotCh2D
     plotChSum(t, run, xmin=0.6*xmin, xmax=xmax *
-              1.3, outdir="plots/Selections/ChSum")
+              1.3, outdir="plots/Selections/ChSum", extraToDraws=[lmin, lmax])
     plotCh2D(t, run, xmin=xmin, xmax=xmax, outdir="plots/Selections/Ch2D")
 
     # create a new file

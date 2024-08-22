@@ -7,9 +7,12 @@ from .plotStyles import DrawHistos
 import ROOT
 
 
-def plotChSum(t, run, xmin=0, xmax=8000, outdir="plots/ChSum"):
+def plotChSum(t, run, xmin=0, xmax=8000, outdir="plots/ChSum", extraToDraws=[]):
     h = ROOT.TH1F(f"h_Run{run}ChSum", "h", 500, xmin, xmax)
     t.Draw(f"Sum$(ch_lg)>>h_Run{run}ChSum")
+
+    h.SetLineColor(ROOT.kBlack)
+    h.SetMarkerColor(ROOT.kBlack)
 
     vmax = h.GetMaximum()
     outname = f"Run{run}_sum_ch_lg"
@@ -17,7 +20,7 @@ def plotChSum(t, run, xmin=0, xmax=8000, outdir="plots/ChSum"):
     title = GetTitle(run)
 
     DrawHistos([h], [], xmin, xmax, "Energy [ADC]", 0.1, vmax * 1e2,
-               "Counts", outname, dology=True, outdir=outdir, lheader=title, legendPos=(0.25, 0.85, 0.80, 0.90))
+               "Counts", outname, dology=True, outdir=outdir, lheader=title, legendPos=(0.25, 0.85, 0.80, 0.90), extraToDraws=extraToDraws)
 
 
 def getChannelMap(chan):

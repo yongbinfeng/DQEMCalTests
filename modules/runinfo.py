@@ -59,7 +59,9 @@ def GetSelectionRange(energy, hasAtten, hasFilter):
     in the events. Then used for (non)linear regression
     """
     selections = {
-        (8, 1, 0): (900.0, 1200.0)
+        (8, 0, 0): (2000.0, 3500.0),
+        (8, 1, 0): (900.0, 1200.0),
+        (8, 1, 1): (1000.0, 1450.0)
     }
     try:
         return selections[(energy, hasAtten, hasFilter)]
