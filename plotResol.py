@@ -48,10 +48,7 @@ def AddOneGraph(fname, color, marker, label, offset=0):
     gMean.SetMarkerColor(color)
     gMean.SetLineColor(color)
 
-    def myScale(x, par):
-        return par[0] + par[1] * x[0]
-
-    fitFunc1 = ROOT.TF1("fitFunc1", "pol1", 1.0, 35, 2)
+    fitFunc1 = ROOT.TF1("fitFunc1", "[0] * x", 0, 35, 2)
     fitFunc1.SetParameters(0.0, 0.0)
     fitFunc1.SetLineColor(color)
     # Fit the function to the data
@@ -91,7 +88,7 @@ def AddOneGraph(fname, color, marker, label, offset=0):
 
     extraToDraws_mean = AddRunInfo(gMean)
     DrawHistos([gMean.Clone()], [label], 0, 35, "Energy [GeV]", 0,
-               6e3, "Mean [ADCCount]", "fit_mean_"+suffix, dology=False, drawoptions=["P"], legendoptions=["P"], legendPos=[0.45, 0.80, 0.8, 0.85], nMaxDigits=3, extraToDraws=extraToDraws_mean)
+               1e4, "Mean [ADCCount]", "fit_mean_"+suffix, dology=False, drawoptions=["P"], legendoptions=["P"], legendPos=[0.20, 0.80, 0.45, 0.85], nMaxDigits=3, extraToDraws=extraToDraws_mean)
 
     extraToDraws_sigma = AddRunInfo(gSigma)
     DrawHistos([gSigma.Clone(), fBNLResol, fSTARResol], [label, "BNL Testbeam Results", "STAR Results"], 0, 35, "Energy [GeV]",
@@ -129,7 +126,7 @@ nGraphs = len(to_draws_means)
 # fResol.SetLineStyle(3)
 
 DrawHistos(to_draws_means, legends, 0, 35, "Energy [GeV]", 0,
-           6e3, "Mean [ADCCount]", "fit_mean", dology=False, drawoptions=["P"]*nGraphs, legendoptions=["P"]*nGraphs, legendPos=[0.45, 0.68, 0.8, 0.85], nMaxDigits=3)
+           1e4, "Mean [ADCCount]", "fit_mean", dology=False, drawoptions=["P"]*nGraphs, legendoptions=["P"]*nGraphs, legendPos=[0.20, 0.68, 0.45, 0.85], nMaxDigits=3)
 
 DrawHistos(to_draws_sigmas+[fBNLResol, fSTARResol], legends + ["BNL Testbeam Results", "STAR Results"], 0, 35, "Energy [GeV]",
            0, 0.18, "#sigma/#mu", "fit_sigma", dology=False, drawoptions=["P"]*nGraphs+["L", "L"], legendoptions=["P"]*nGraphs+["L", "L"], legendPos=[0.45, 0.68, 0.8, 0.85])
