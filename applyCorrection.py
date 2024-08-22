@@ -4,7 +4,7 @@ import os
 from modules.CNNModel import loadCNNModel
 from modules.fitFunction import fitFunction, loadResults
 from modules.utils import getChannelMap
-from modules.runinfo import runinfo, GetFitRange
+from modules.runinfo import runinfo, GetFitRange, GetRunInfo, CheckRunExists
 
 
 def applyCNNRegression(model, chans, run, verbose=False, applyCutForWeightPlots=True):
@@ -15,15 +15,15 @@ def applyCNNRegression(model, chans, run, verbose=False, applyCutForWeightPlots=
 
     selection = np.ones(len(raw), dtype=bool)
     if applyCutForWeightPlots:
-        try:
-            be, atten = runinfo[run]
+        if CheckRunExists(run):
+            be, atten, ndf, _ = GetRunInfo(run)
             try:
-                _, _, fitmin, fitmax = GetFitRange(be * 8.0, atten)
+                _, _, fitmin, fitmax = GetFitRange(be * 8.0, atten, ndf)
                 selection = (raw > fitmin) & (raw < fitmax)
             except KeyError:
                 print(
                     f"Run {run} with {be*8.0} GeV and attenuation {atten} not found in FitRange")
-        except KeyError:
+        else:
             print(f"Run {run} not found in runinfo")
 
     weights_sel = weights[selection]
@@ -134,6 +134,8 @@ if __name__ == "__main__":
                         default="", help="MIP calibration file")
     parser.add_argument("-l", "--file_linear", type=str,
                         default="", help="Linear regression file")
+    parser.add_argument("-c", "--file_cnn", type=str,
+                        default="", help="CNN model file")
     parser.add_argument("-s", "--start", type=int,
                         default=369, help="Run number to start")
     parser.add_argument("-e", "--end", type=int,
@@ -160,5 +162,11 @@ if __name__ == "__main__":
         linearcalibs = loadResults(fname)
         linearcalibs = np.array(linearcalibs)
 
+    cnnmodel = None
+    if args.file_cnn != "":
+        fname = args.file_cnn
+        print(f"Using CNN model file: {fname}")
+        cnnmodel = loadCNNModel(fname)
+
     for i in range(run_start, run_end+1):
-        Evaluate(i, None, linearcalibs, mipcalibs)
+        Evaluate(i, cnnmodel, linearcalibs, mipcalibs)

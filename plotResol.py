@@ -17,7 +17,14 @@ fSTARResol = ROOT.TF1(
 fSTARResol.SetLineColor(8)
 fSTARResol.SetMarkerColor(8)
 fSTARResol.SetLineWidth(4)
-fSTARResol.SetLineStyle(3)
+fSTARResol.SetLineStyle(4)
+
+fsPHENIXResol = ROOT.TF1(
+    "fsPHENIXResol", "sqrt(0.02*0.02 + 0.032*0.032 + 0.149*0.149/x)", 1.0, 32)
+fsPHENIXResol.SetLineColor(800)
+fsPHENIXResol.SetMarkerColor(800)
+fsPHENIXResol.SetLineWidth(2)
+fsPHENIXResol.SetLineStyle(2)
 
 
 def AddOneGraph(fname, color, marker, label, offset=0):
@@ -91,8 +98,8 @@ def AddOneGraph(fname, color, marker, label, offset=0):
                1e4, "Mean [ADCCount]", "fit_mean_"+suffix, dology=False, drawoptions=["P"], legendoptions=["P"], legendPos=[0.20, 0.80, 0.45, 0.85], nMaxDigits=3, extraToDraws=extraToDraws_mean)
 
     extraToDraws_sigma = AddRunInfo(gSigma)
-    DrawHistos([gSigma.Clone(), fBNLResol, fSTARResol], [label, "BNL Testbeam Results", "STAR Results"], 0, 35, "Energy [GeV]",
-               0, 0.18, "#sigma/#mu", "fit_sigma_"+suffix, dology=False, drawoptions=["P", "L", "L"], legendoptions=["P", "L", "L"], legendPos=[0.45, 0.70, 0.8, 0.85],  extraToDraws=extraToDraws_sigma)
+    DrawHistos([gSigma.Clone(), fBNLResol, fSTARResol, fsPHENIXResol], [label, "BNL Testbeam Results", "STAR Results", "sPNENIX Results"], 0, 35, "Energy [GeV]",
+               0, 0.18, "#sigma/#mu", "fit_sigma_"+suffix, dology=False, drawoptions=["P", "L", "L", "L"], legendoptions=["P", "L", "L", "L"], legendPos=[0.45, 0.65, 0.8, 0.85],  extraToDraws=extraToDraws_sigma)
 
     return gMean, gSigma
 
@@ -128,5 +135,5 @@ nGraphs = len(to_draws_means)
 DrawHistos(to_draws_means, legends, 0, 35, "Energy [GeV]", 0,
            1e4, "Mean [ADCCount]", "fit_mean", dology=False, drawoptions=["P"]*nGraphs, legendoptions=["P"]*nGraphs, legendPos=[0.20, 0.68, 0.45, 0.85], nMaxDigits=3)
 
-DrawHistos(to_draws_sigmas+[fBNLResol, fSTARResol], legends + ["BNL Testbeam Results", "STAR Results"], 0, 35, "Energy [GeV]",
-           0, 0.18, "#sigma/#mu", "fit_sigma", dology=False, drawoptions=["P"]*nGraphs+["L", "L"], legendoptions=["P"]*nGraphs+["L", "L"], legendPos=[0.45, 0.68, 0.8, 0.85])
+DrawHistos(to_draws_sigmas+[fBNLResol, fSTARResol, fsPHENIXResol], legends + ["BNL Testbeam Results", "STAR Results", "sPHENIX Results"], 0, 35, "Energy [GeV]",
+           0, 0.18, "#sigma/#mu", "fit_sigma", dology=False, drawoptions=["P"]*nGraphs+["L", "L", "L"], legendoptions=["P"]*nGraphs+["L", "L", "L"], legendPos=[0.45, 0.64, 0.8, 0.85])

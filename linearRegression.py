@@ -107,6 +107,8 @@ def RunLinearRegression(run_start, run_end):
                          200, target-1000, target+1000)
     hcal_unc.FillN(nentries, predictions_unc, np.ones(nentries))
     hcal_unc.Write()
+    # hcal_reg is on the selected events for regression
+    # only for debugging
     hcal_reg = ROOT.TH1F("hcal_reg", "Calibrated Energy (Reg)",
                          200, target-1000, target+1000)
     hcal_reg.FillN(chans_reg.shape[0], predictions_reg,

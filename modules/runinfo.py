@@ -61,7 +61,7 @@ def GetSelectionRange(energy, hasAtten, hasFilter):
     selections = {
         (8, 0, 0): (2000.0, 3500.0),
         (8, 1, 0): (900.0, 1200.0),
-        (8, 1, 1): (1000.0, 1450.0)
+        (8, 0, 1): (1000.0, 1450.0)
     }
     try:
         return selections[(energy, hasAtten, hasFilter)]
@@ -76,7 +76,9 @@ def GetRegressionGoal(run):
     return the target energy for the linear regression
     """
     goals = {
-        (8, 1, 0): 1000.0
+        (8, 1, 0): 1000.0,
+        (8, 0, 0): 2700.0,
+        (8, 0, 1): 1200.0,
     }
     energy = GetEnergy(run)
     hasAtten = HasAttenuator(run)
